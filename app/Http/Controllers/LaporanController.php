@@ -35,6 +35,8 @@ class LaporanController extends Controller
             'judul'     => 'required|string|max:255',
             'kategori'  => 'required|string',
             'lokasi'    => 'required|string',
+            'latitude'  => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'deskripsi' => 'required|string',
             'foto'      => 'nullable|image|max:2048',
         ]);
@@ -49,6 +51,8 @@ class LaporanController extends Controller
             'judul'     => $request->judul,
             'kategori'  => $request->kategori,
             'lokasi'    => $request->lokasi,
+            'latitude'  => $request->latitude,
+            'longitude' => $request->longitude,
             'deskripsi' => $request->deskripsi,
             'foto'      => $foto,
             'status'    => 'pending',

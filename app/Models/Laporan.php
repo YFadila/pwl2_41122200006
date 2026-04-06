@@ -8,7 +8,8 @@ class Laporan extends Model
 {
     protected $fillable = [
         'user_id', 'judul', 'kategori', 
-        'lokasi', 'deskripsi', 'foto', 'status'
+        'lokasi', 'latitude', 'longitude',
+        'deskripsi', 'foto', 'status'
     ];
 
     public function user()
