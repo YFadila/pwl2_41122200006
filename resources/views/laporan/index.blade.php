@@ -7,6 +7,39 @@
     </x-slot>
 
     <div class="py-6 px-4">
+        {{-- Form Filter --}}
+        <div class="bg-white rounded shadow p-4 mb-4">
+            <form method="GET" action="{{ route('laporan.index') }}" class="flex gap-3 items-end">
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                    <select name="status" class="border rounded px-3 py-2 text-sm">
+                        <option value="">Semua Status</option>
+                        <option value="pending" @selected(request('status') == 'pending')>Pending</option>
+                        <option value="diproses" @selected(request('status') == 'diproses')>Diproses</option>
+                        <option value="selesai" @selected(request('status') == 'selesai')>Selesai</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
+                    <select name="kategori" class="border rounded px-3 py-2 text-sm">
+                        <option value="">Semua Kategori</option>
+                        <option value="Jalan Rusak" @selected(request('kategori') == 'Jalan Rusak')>Jalan Rusak</option>
+                        <option value="Sampah" @selected(request('kategori') == 'Sampah')>Sampah</option>
+                        <option value="Banjir" @selected(request('kategori') == 'Banjir')>Banjir</option>
+                        <option value="Penerangan" @selected(request('kategori') == 'Penerangan')>Penerangan</option>
+                        <option value="Lainnya" @selected(request('kategori') == 'Lainnya')>Lainnya</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded text-sm">Filter</button>
+                    <a href="{{ route('laporan.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm">Reset</a>
+                </div>
+
+            </form>
+        </div>
         @if(session('success'))
             <div class="bg-green-100 text-green-700 p-3 rounded mb-4">{{ session('success') }}</div>
         @endif

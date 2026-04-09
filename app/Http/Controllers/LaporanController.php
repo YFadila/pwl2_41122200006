@@ -12,9 +12,20 @@ class LaporanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $laporans = Laporan::with('user')->latest()->get();
+        $query = Laporan::with('user')->latest();
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->kategori) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $laporans = $query->get();
+
         return view('laporan.index', compact('laporans'));
     }
 
