@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800">Buat Laporan</h2>
     </x-slot>
@@ -97,4 +97,4 @@
                 });
         });
     </script>
-</x-app-layout>
+</x-sidebar-layout>

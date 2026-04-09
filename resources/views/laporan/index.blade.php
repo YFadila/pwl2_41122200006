@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800">Daftar Laporan</h2>
@@ -25,10 +25,9 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
                     <select name="kategori" class="border rounded px-3 py-2 text-sm">
                         <option value="">Semua Kategori</option>
-                        <option value="Jalan Rusak" @selected(request('kategori') == 'Jalan Rusak')>Jalan Rusak</option>
-                        <option value="Sampah" @selected(request('kategori') == 'Sampah')>Sampah</option>
-                        <option value="Banjir" @selected(request('kategori') == 'Banjir')>Banjir</option>
-                        <option value="Penerangan" @selected(request('kategori') == 'Penerangan')>Penerangan</option>
+                        <option value="Infrastruktur & Jalan" @selected(request('kategori') == 'Infrastruktur & Jalan')>Infrastruktur & Jalan</option>
+                        <option value="Kebersihan & Lingkungan" @selected(request('kategori') == 'Kebersihan & Lingkungan')>Kebersihan & Lingkungan</option>
+                        <option value="Fasilitas Umum" @selected(request('kategori') == 'Fasilitas Umum')>Fasilitas Umum</option>
                         <option value="Lainnya" @selected(request('kategori') == 'Lainnya')>Lainnya</option>
                     </select>
                 </div>
@@ -87,4 +86,4 @@
             </table>
         </div>
     </div>
-</x-app-layout>
+</x-sidebar-layout>
