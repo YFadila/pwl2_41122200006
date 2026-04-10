@@ -25,21 +25,21 @@
             Kata<span style="color:#E8A87C;">Warga</span>
         </div>
         <p class="text-gray-400 text-sm leading-relaxed max-w-xs mb-10 relative z-10">
-            Ini deskripsi singkat.
+            Ini deskripsi singkat (belum kepikiran).
         </p>
 
         <div class="relative z-10 space-y-4">
             <div class="flex items-center gap-3">
                 <div class="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></div>
-                <span class="text-gray-400 text-sm">Ini poin 1.</span>
+                <span class="text-gray-400 text-sm">belum kepikiran.</span>
             </div>
             <div class="flex items-center gap-3">
                 <div class="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></div>
-                <span class="text-gray-400 text-sm">Ini poin 2.</span>
+                <span class="text-gray-400 text-sm">belum kepikiran.</span>
             </div>
             <div class="flex items-center gap-3">
                 <div class="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></div>
-                <span class="text-gray-400 text-sm">Ini poin 3.</span>
+                <span class="text-gray-400 text-sm">belum kepikiran.</span>
             </div>
         </div>
     </div>
