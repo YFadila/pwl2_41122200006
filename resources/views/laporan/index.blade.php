@@ -1,6 +1,8 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <div style="font-family:'DM Serif Display',serif; font-size:26px; color:#1A1A18;">Daftar Laporan</div>
+        <h3 class="text-2xl font-bold text-gray-900" style="font-family: 'DM Serif Display', serif;">
+            Daftar Laporan
+        </h3>
         <div style="color:#8A8A7A; font-size:13px; margin-top:4px;">Semua laporan yang masuk dari warga</div>
     </x-slot>
 
@@ -24,10 +26,10 @@
 
             <select name="kategori" style="padding:10px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#fff; color:#4A4A42; outline:none; min-width:140px;">
                 <option value="">Semua Kategori</option>
-                <option value="Jalan Rusak" @selected(request('kategori') == 'Jalan Rusak')>Jalan Rusak</option>
-                <option value="Sampah" @selected(request('kategori') == 'Sampah')>Sampah</option>
-                <option value="Banjir" @selected(request('kategori') == 'Banjir')>Banjir</option>
-                <option value="Penerangan" @selected(request('kategori') == 'Penerangan')>Penerangan</option>
+                <option value="Infrastruktur & Jalan" @selected(request('kategori') == 'Infrastruktur & Jalan')>Infrastruktur & Jalan</option>
+                <option value="Sampah & Kebersihan" @selected(request('kategori') == 'Sampah & Kebersihan')>Sampah & Kebersihan</option>
+                <option value="Air & Drainase" @selected(request('kategori') == 'Air & Drainase')>Air & Drainase</option>
+                <option value="Fasilitas Umum" @selected(request('kategori') == 'Fasilitas Umum')>Fasilitas Umum</option>
                 <option value="Lainnya" @selected(request('kategori') == 'Lainnya')>Lainnya</option>
             </select>
 
