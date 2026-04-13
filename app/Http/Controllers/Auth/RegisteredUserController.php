@@ -46,7 +46,6 @@ class RegisteredUserController extends Controller
 
         // Auth::login($user);
 
-        return redirect()->route('login')
-            ->with('success', 'Akun berhasil dibuat. Silahkan login.');
+        return redirect()->route('login')->with('status', 'Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.');
     }
 }

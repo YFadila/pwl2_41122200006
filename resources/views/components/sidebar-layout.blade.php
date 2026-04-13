@@ -51,6 +51,7 @@
         {{-- Bottom User Info --}}
         <div class="mt-auto">
             <div class="border-t border-gray-700 pt-4">
+                <a href="{{ route('profile.edit') }}">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
@@ -60,6 +61,7 @@
                         <div class="text-gray-500 text-xs">{{ ucfirst(auth()->user()->role) }}</div>
                     </div>
                 </div>
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded text-sm text-gray-400 hover:text-white hover:bg-gray-800 w-full">
