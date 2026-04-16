@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Laporan;
+use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -57,7 +58,7 @@ class LaporanController extends Controller
             $foto = $request->file('foto')->store('foto_laporan', 'public');
         }
 
-        Laporan::create([
+        $laporan = Laporan::create([
             'user_id'   => Auth::id(),
             'judul'     => $request->judul,
             'kategori'  => $request->kategori,
@@ -68,6 +69,16 @@ class LaporanController extends Controller
             'foto'      => $foto,
             'status'    => 'pending',
         ]);
+
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notifikasi::create([
+                'user_id'    => $admin->id,
+                'laporan_id' => $laporan->id,
+                'pesan'      => 'Laporan baru masuk: "' . $laporan->judul . '" dari ' . Auth::user()->name,
+                'dibaca'     => false,
+            ]);
+        }
 
         return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dikirim!');
     }
@@ -98,7 +109,23 @@ class LaporanController extends Controller
             'status' => 'required|in:pending,diproses,selesai',
         ]);
 
+        $statusLama = $laporan->status;
         $laporan->update(['status' => $request->status]);
+
+        if ($statusLama !== $request->status) {
+            $pesan = [
+                'diproses' => 'Laporan kamu "' . $laporan->judul . '" sedang diproses.',
+                'selesai'  => 'Laporan kamu "' . $laporan->judul . '" telah selesai ditangani.',
+                'pending'  => 'Laporan kamu "' . $laporan->judul . '" dikembalikan ke status pending.',
+            ];
+
+            Notifikasi::create([
+                'user_id'    => $laporan->user_id,
+                'laporan_id' => $laporan->id,
+                'pesan'      => $pesan[$request->status],
+                'dibaca'     => false,
+            ]);
+        }
 
         return redirect()->route('laporan.show', $laporan)->with('success', 'Status berhasil diupdate!');
     }

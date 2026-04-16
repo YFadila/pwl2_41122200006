@@ -19,6 +19,14 @@
                         {{ __('Laporan') }}
                     </x-nav-link>    
 
+                    <x-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')">
+                        Notifikasi
+                        @php $unread = auth()->user()->notifikasis()->where('dibaca', false)->count(); @endphp
+                        @if($unread > 0)
+                            <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-2">{{ $unread }}</span>
+                        @endif
+                    </x-nav-link>
+
                 </div>
             </div>
         

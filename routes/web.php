@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\KomentarController;
+use App\Http\Controllers\NotifikasiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('laporan', LaporanController::class)->except(['edit', 'update', 'destroy']);
 
     Route::post('/laporan/{laporan_id}/komentar', [KomentarController::class, 'store'])->name('komentar.store');
+
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
 
     Route::middleware(['admin'])->group(function () {
         Route::get('/laporan/{laporan}/edit', [LaporanController::class, 'edit'])->name('laporan.edit');
