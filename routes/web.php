@@ -23,6 +23,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/laporan/{laporan_id}/komentar', [KomentarController::class, 'store'])->name('komentar.store');
 
+    Route::get('/notifikasi/json', [NotifikasiController::class, 'getJson'])->name('notifikasi.json');
+    Route::post('/notifikasi/mark-read', [NotifikasiController::class, 'markRead'])->name('notifikasi.markRead');
+    Route::post('/notifikasi/{id}/baca', [NotifikasiController::class, 'markOne'])->name('notifikasi.markOne');
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
 
     Route::middleware(['admin'])->group(function () {
