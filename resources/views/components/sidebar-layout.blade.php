@@ -280,7 +280,6 @@
         <div class="mt-auto">
             <div class="border-t border-gray-700 pt-4">
                 
-                {{-- Tombol Profil --}}
                 <button type="button" onclick="toggleProfilePanel()" class="flex items-center gap-3 px-2 py-2 -mx-2 mb-2 rounded w-full text-left hover:bg-gray-800 transition-colors">
                     <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
@@ -291,7 +290,6 @@
                     </div>
                 </button>
 
-                {{-- Tombol Logout --}}
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded text-sm text-gray-400 hover:text-white hover:bg-gray-800 w-full">
@@ -314,7 +312,6 @@
 
 </div>
 
-{{-- NOTIFICATION PANEL --}}
 <div class="notif-overlay" id="notifOverlay" onclick="toggleNotifPanel()"></div>
 
 <div class="notif-panel" id="notifPanel">
@@ -405,7 +402,6 @@
             </form>
         </div>
 
-        {{-- Di dalam form password, tambahkan tampilan error --}}
         <div class="pp-inner" id="ppInnerPassword">
             @if (session('status') === 'password-updated')
                 <div class="pp-alert" style="background: #d1fae5; border-color: #10b981; color: #065f46;">
@@ -714,27 +710,22 @@
         if (btn) btn.classList.add('active');
     };
 
-    // ✅ Sukses update profil
     @if (session('status') === 'profile-updated')
         toggleProfilePanel();
         switchPpTab('profil');
 
-    // ✅ Sukses update password
     @elseif (session('status') === 'password-updated')
         toggleProfilePanel();
         switchPpTab('password');
 
-    // ✅ Error khusus dari form password (error bag: updatePassword)
     @elseif ($errors->updatePassword->any())
         toggleProfilePanel();
         switchPpTab('password');
 
-    // ✅ Error dari form hapus akun
     @elseif ($errors->userDeletion->any())
         toggleProfilePanel();
         switchPpTab('hapus');
 
-    // ✅ Error umum dari form profil (update nama/email)
     @elseif ($errors->any())
         toggleProfilePanel();
         switchPpTab('profil');
