@@ -333,8 +333,8 @@
 
     {{-- Tabs --}}
     <div class="notif-tabs">
-        <button class="notif-tab active" id="tabSemua" onclick="switchTab('semua')">Semua</button>
-        <button class="notif-tab" id="tabBelum" onclick="switchTab('belum')">Belum dibaca</button>
+        <button class="notif-tab active" id="tabSemua" onclick="switchNotifTab('semua')">Semua</button>
+        <button class="notif-tab" id="tabBelum" onclick="switchNotifTab('belum')">Belum dibaca</button>
     </div>
 
     {{-- Actions --}}
@@ -497,7 +497,7 @@
         if (isOpen) fetchNotifications();
     };
 
-    window.switchTab = function (tab) {
+    window.switchNotifTab = function (tab) {
         activeTab = tab;
         document.getElementById('tabSemua').classList.toggle('active', tab === 'semua');
         document.getElementById('tabBelum').classList.toggle('active', tab === 'belum');
