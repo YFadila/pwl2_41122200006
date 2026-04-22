@@ -18,11 +18,22 @@
         </div>
     @endif
 
+    {{-- LIGHTBOX CONTAINER (Hidden by default) --}}
+    <div id="lightbox" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+        <button onclick="closeLightbox()" style="position:absolute; top:20px; right:30px; background:none; border:none; color:white; font-size:36px; font-weight:bold; cursor:pointer; padding:10px;">&times;</button>
+        <img id="lightbox-img" src="" style="max-width:90%; max-height:90vh; border-radius:8px; object-fit:contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+    </div>
+
     <div style="background:#fff; border-radius:14px; border:1.5px solid #D8D4CC; overflow:hidden;">
 
         {{-- Foto --}}
         @if($laporan->foto)
-            <img src="{{ Storage::url($laporan->foto) }}" style="width:100%; height:260px; object-fit:cover;">
+            <img src="{{ Storage::url($laporan->foto) }}" 
+                 onclick="openLightbox('{{ Storage::url($laporan->foto) }}')"
+                 style="width:100%; height:260px; object-fit:cover; cursor:zoom-in; transition: opacity 0.2s;"
+                 onmouseover="this.style.opacity=0.9"
+                 onmouseout="this.style.opacity=1"
+                 title="Klik untuk memperbesar">
         @else
             <div style="width:100%; height:200px; background:#F0EDE8; display:flex; align-items:center; justify-content:center;">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -89,22 +100,22 @@
 
             {{-- Tab Bar --}}
             <div style="display:flex; border-bottom:1.5px solid #D8D4CC; margin-bottom:0;">
-                <button onclick="switchTab('info', this)"
+                <button onclick="window.switchTab('info', this)"
                     class="lap-tab lap-tab-active"
                     style="flex:1; padding:11px 0; font-size:13px; font-weight:500; color:#1A1A18; background:none; border:none; border-bottom:2px solid #1A1A18; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s;">
                     Info Laporan
                 </button>
-                <button onclick="switchTab('timeline', this)"
+                <button onclick="window.switchTab('timeline', this)"
                     class="lap-tab"
                     style="flex:1; padding:11px 0; font-size:13px; font-weight:400; color:#8A8A7A; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s;">
                     Timeline
                 </button>
-                <button onclick="switchTab('diskusi', this)"
+                <button onclick="window.switchTab('diskusi', this)"
                     class="lap-tab"
                     style="flex:1; padding:11px 0; font-size:13px; font-weight:400; color:#8A8A7A; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s;">
                     Diskusi
                     <span style="display:inline-block; background:#1A1A18; color:#fff; font-size:10px; font-weight:600; padding:1px 7px; border-radius:20px; margin-left:5px;">
-                        {{ $laporan->komentars->count() }}
+                        {{ $laporan->total_komentars }}
                     </span>
                 </button>
             </div>
@@ -130,7 +141,7 @@
                 </div>
                 <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:13px;">
                     <span style="color:#8A8A7A;">Komentar</span>
-                    <span style="color:#1A1A18; font-weight:500;">{{ $laporan->komentars->count() }}</span>
+                    <span style="color:#1A1A18; font-weight:500;">{{ $laporan->total_komentars }}</span>
                 </div>
 
                 {{-- Update Status (Admin Only) --}}
@@ -225,7 +236,7 @@
                         </div>
                         <div style="font-size:13px; color:#4A4A42; line-height:1.5; margin-bottom:8px;">{{ $komentar->isi }}</div>
 
-                        <button onclick="toggleReply({{ $komentar->id }})"
+                        <button onclick="window.toggleReply({{ $komentar->id }})"
                             style="font-size:12px; color:#D4621A; background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500;">
                             ↩ Balas
                         </button>
@@ -239,7 +250,7 @@
                                     style="width:100%; padding:9px 12px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#FAFAF8; outline:none; resize:none; box-sizing:border-box;"></textarea>
                                 <div style="display:flex; gap:8px; margin-top:8px;">
                                     <button type="submit" style="padding:6px 16px; background:#D4621A; color:#fff; border:none; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">Kirim</button>
-                                    <button type="button" onclick="toggleReply({{ $komentar->id }})" style="padding:6px 16px; border:1.5px solid #D8D4CC; background:transparent; color:#4A4A42; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer;">Batal</button>
+                                    <button type="button" onclick="window.toggleReply({{ $komentar->id }})" style="padding:6px 16px; border:1.5px solid #D8D4CC; background:transparent; color:#4A4A42; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer;">Batal</button>
                                 </div>
                             </form>
                         </div>
@@ -283,30 +294,57 @@
     </script>
     @endif
 
+    {{-- JAVASCRIPT: Tabs & Lightbox --}}
     <script>
-    function switchTab(name, btn) {
-        document.querySelectorAll('.lap-panel').forEach(p => p.style.display = 'none');
-        document.querySelectorAll('.lap-tab').forEach(b => {
-            b.style.color = '#8A8A7A';
-            b.style.fontWeight = '400';
-            b.style.borderBottom = '2px solid transparent';
+        // Mengamankan scope dengan object window agar terbaca dari inline onClick
+        window.switchTab = function(name, btn) {
+            document.querySelectorAll('.lap-panel').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.lap-tab').forEach(b => {
+                b.style.color = '#8A8A7A';
+                b.style.fontWeight = '400';
+                b.style.borderBottom = '2px solid transparent';
+            });
+            document.getElementById('tab-' + name).style.display = 'block';
+            btn.style.color = '#1A1A18';
+            btn.style.fontWeight = '500';
+            btn.style.borderBottom = '2px solid #1A1A18';
+        }
+
+        window.toggleReply = function(id) {
+            const form = document.getElementById('reply-form-' + id);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- Fitur Lightbox ---
+        window.openLightbox = function(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Kunci scroll halaman
+        }
+
+        window.closeLightbox = function() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Kembalikan scroll
+        }
+
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target !== document.getElementById('lightbox-img')) {
+                window.closeLightbox();
+            }
         });
-        document.getElementById('tab-' + name).style.display = 'block';
-        btn.style.color = '#1A1A18';
-        btn.style.fontWeight = '500';
-        btn.style.borderBottom = '2px solid #1A1A18';
-    }
 
-    function toggleReply(id) {
-        const form = document.getElementById('reply-form-' + id);
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('lightbox').style.display === 'flex') {
+                window.closeLightbox();
+            }
+        });
 
-    {{-- Auto-buka tab Diskusi jika ada hash di URL --}}
-    if (window.location.hash === '#diskusi') {
-        const btn = document.querySelector('.lap-tab:nth-child(3)');
-        if (btn) switchTab('diskusi', btn);
-    }
+        window.addEventListener('DOMContentLoaded', (event) => {
+            if (window.location.hash === '#diskusi') {
+                const btn = document.querySelector('.lap-tab:nth-child(3)');
+                if (btn) window.switchTab('diskusi', btn);
+            }
+        });
     </script>
 
 </x-sidebar-layout>
