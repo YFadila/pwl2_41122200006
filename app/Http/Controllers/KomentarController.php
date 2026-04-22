@@ -11,12 +11,14 @@ class KomentarController extends Controller
  public function store(Request $request, $laporan_id)
     {
         $request->validate([
-            'isi' => 'required|string',
+            'isi'       => 'required|string',
+            'parent_id' => 'nullable|exists:komentars,id',
         ]);
 
         Komentar::create([
             'user_id'    => Auth::id(),
             'laporan_id' => $laporan_id,
+            'parent_id'  => $request->parent_id,
             'isi'        => $request->isi,
         ]);
 

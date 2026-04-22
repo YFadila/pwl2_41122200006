@@ -88,7 +88,11 @@ class LaporanController extends Controller
      */
     public function show(Laporan $laporan)
     {
-        $laporan->load('user', 'komentars.user');
+        $laporan->loadCount('komentars as total_komentars');
+        $laporan->load('user');
+        $laporan->load(['komentars' => function ($query) {
+            $query->whereNull('parent_id')->with('user', 'replies.user')->latest();
+        }]);
         return view('laporan.show', compact('laporan'));
     }
 
