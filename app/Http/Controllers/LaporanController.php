@@ -17,17 +17,26 @@ class LaporanController extends Controller
     {
         $query = Laporan::with('user')->latest();
 
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
+            if ($request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%');
+                    });
+                });
+            }
 
-        if ($request->kategori) {
-            $query->where('kategori', $request->kategori);
-        }
+            if ($request->status) {
+                $query->where('status', $request->status);
+            }
+            if ($request->kategori) {
+                $query->where('kategori', $request->kategori);
+            }
 
-        $laporans = $query->get();
+            $laporans = $query->get();
 
-        return view('laporan.index', compact('laporans'));
+            return view('laporan.index', compact('laporans'));
     }
 
     /**
