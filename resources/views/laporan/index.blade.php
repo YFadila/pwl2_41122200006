@@ -49,7 +49,8 @@
     {{-- Grid Laporan --}}
     <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
         @forelse($laporans as $laporan)
-        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:20px 22px; transition:transform 0.2s, box-shadow 0.2s;"
+        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:20px 22px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;"
+            onclick="window.location='{{ route('laporan.show', $laporan) }}'"
             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.07)';this.style.borderColor='#E8A87C'"
             onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='#D8D4CC'">
 
@@ -90,7 +91,11 @@
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <a href="{{ route('laporan.show', $laporan) }}" style="font-size:12px; color:#2A5BA8; text-decoration:none; font-weight:500;">Detail →</a>
+                    {{-- Jumlah Komentar --}}
+                    <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A;">
+                        💬 {{ $laporan->komentars->count() }}
+                    </span>
+
                     @if(auth()->user()->isAdmin())
                     <form action="{{ route('laporan.destroy', $laporan) }}" method="POST" onsubmit="return confirm('Hapus laporan ini?')" style="display:inline;">
                         @csrf
