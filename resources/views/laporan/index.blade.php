@@ -97,7 +97,7 @@
                     </span>
 
                     @if(auth()->user()->isAdmin())
-                    <form action="{{ route('laporan.destroy', $laporan) }}" method="POST" onsubmit="return confirm('Hapus laporan ini?')" style="display:inline;">
+                    <form action="{{ route('laporan.destroy', $laporan) }}" method="POST" onclick="event.stopPropagation()" onsubmit="return confirm('Hapus laporan ini?')" style="display:inline;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" style="font-size:12px; color:#dc2626; background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif;">Hapus</button>
