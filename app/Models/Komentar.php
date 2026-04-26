@@ -25,7 +25,7 @@ class Komentar extends Model
 
     public function replies()
     {
-        return $this->hasMany(Komentar::class, 'parent_id');
+        return $this->hasMany(Komentar::class, 'parent_id')->oldest();
     }
 
     /**
@@ -33,6 +33,6 @@ class Komentar extends Model
      */
     public function allReplies()
     {
-        return $this->hasMany(Komentar::class, 'parent_id')->with('user', 'parent.user', 'allReplies');
+        return $this->hasMany(Komentar::class, 'parent_id')->with('user', 'parent.user', 'allReplies')->oldest();
     }
 }
