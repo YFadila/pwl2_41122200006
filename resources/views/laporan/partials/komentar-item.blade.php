@@ -1,60 +1,43 @@
 {{-- Recursive comment item partial --}}
+{{-- Variables: $komentar, $laporan, $depth (nesting level) --}}
 @php $depth = $depth ?? 0; @endphp
 
-<div class="flex gap-2.5 {{ $depth > 0 ? 'mt-3.5 pl-4 border-l-2 border-stone-200' : '' }}" id="komentar-{{ $komentar->id }}">
-
-    {{-- Avatar --}}
-    <div class="{{ $depth === 0 ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]' }} rounded-full {{ $depth === 0 ? 'bg-sky-700' : 'bg-orange-600' }} flex items-center justify-center font-bold text-white flex-shrink-0 tracking-wide">
+<div style="display:flex; gap:{{ $depth === 0 ? '12' : '10' }}px; margin-top:{{ $depth > 0 ? '12' : '0' }}px; {{ $depth > 0 ? 'padding-left:20px; border-left:2px solid rgba(212,98,26,' . max(0.08, 0.2 - ($depth * 0.05)) . ');' : '' }}" id="komentar-{{ $komentar->id }}">
+    <div style="width:{{ $depth === 0 ? '32' : '24' }}px; height:{{ $depth === 0 ? '32' : '24' }}px; border-radius:50%; background:{{ $depth === 0 ? '#7C9EB2' : '#D4621A' }}; display:flex; align-items:center; justify-content:center; font-size:{{ $depth === 0 ? '11' : '9' }}px; font-weight:700; color:#fff; flex-shrink:0;">
         {{ strtoupper(substr($komentar->user->name, 0, 2)) }}
     </div>
-
-    <div class="flex-1 min-w-0">
-
-        {{-- Bubble --}}
-        <div class="{{ $depth === 0 ? 'bg-stone-50 border-stone-200 rounded-xl' : 'bg-stone-100 border-stone-200 rounded-lg' }} border px-3.5 py-2.5 mb-1.5">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="{{ $depth === 0 ? 'text-sm' : 'text-xs' }} font-semibold text-stone-900">{{ $komentar->user->name }}</span>
-                <span class="text-[11px] text-stone-400">{{ $komentar->created_at->diffForHumans() }}</span>
-            </div>
-            <p class="text-sm text-stone-700 leading-relaxed m-0">{{ $komentar->isi }}</p>
+    <div style="flex:1; min-width:0;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:{{ $depth === 0 ? '6' : '4' }}px;">
+            <span style="font-size:{{ $depth === 0 ? '13' : '12' }}px; font-weight:600; color:#1A1A18;">{{ $komentar->user->name }}</span>
+            <span style="font-size:11px; color:#8A8A7A;">{{ $komentar->created_at->format('d M Y, H:i') }}</span>
         </div>
 
-        {{-- Balas Button --}}
+        <div style="font-size:13px; color:#4A4A42; line-height:1.5; margin-bottom:8px;">{{ $komentar->isi }}</div>
+
         <button onclick="window.toggleReply({{ $komentar->id }})"
-            class="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-orange-600 bg-transparent border-none cursor-pointer font-medium transition-colors px-0.5">
-            <span>↩</span> Balas
+            class="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-orange-600 bg-transparent border-none cursor-pointer font-medium transition-colors px-0">
+            ↩ Balas
         </button>
 
         {{-- Reply Form --}}
-        <div id="reply-form-{{ $komentar->id }}" class="hidden mt-2.5">
+        <div id="reply-form-{{ $komentar->id }}" style="display:none; margin-top:12px; padding-left:20px; border-left:2px solid #F0EDE8;">
             <form action="{{ route('komentar.store', $laporan->id) }}" method="POST">
                 @csrf
                 <input type="hidden" name="parent_id" value="{{ $komentar->id }}">
-                <textarea name="isi" rows="2" required placeholder="Balas {{ $komentar->user->name }}..."
-                    class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-stone-50 outline-none resize-none leading-relaxed focus:border-orange-500 transition-colors text-stone-900"></textarea>
-                <div class="flex gap-2 mt-2">
-                    <button type="submit"
-                        class="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white border-none rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-                        Kirim
-                    </button>
-                    <button type="button" onclick="window.toggleReply({{ $komentar->id }})"
-                        class="px-4 py-1.5 border border-stone-200 hover:border-stone-300 bg-transparent text-stone-600 rounded-lg text-xs cursor-pointer transition-colors">
-                        Batal
-                    </button>
+                <textarea name="isi" rows="2" required placeholder="Tulis balasan untuk {{ $komentar->user->name }}..."
+                    style="width:100%; padding:9px 12px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#FAFAF8; outline:none; resize:none; box-sizing:border-box;"></textarea>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button type="submit" style="padding:6px 16px; background:#D4621A; color:#fff; border:none; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">Kirim</button>
+                    <button type="button" onclick="window.toggleReply({{ $komentar->id }})" style="padding:6px 16px; border:1.5px solid #D8D4CC; background:transparent; color:#4A4A42; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer;">Batal</button>
                 </div>
             </form>
         </div>
 
         {{-- Recursive Replies --}}
-        @if($komentar->allReplies && $komentar->allReplies->count() > 0)
-            @foreach($komentar->allReplies as $childReply)
-                @include('laporan.partials.komentar-item', [
-                    'komentar' => $childReply,
-                    'laporan' => $laporan,
-                    'depth' => $depth + 1
-                ])
+        @if($komentar->replies && $komentar->replies->count() > 0)
+            @foreach($komentar->replies as $childReply)
+                @include('laporan.partials.komentar-item', ['komentar' => $childReply, 'laporan' => $laporan, 'depth' => $depth + 1])
             @endforeach
         @endif
-
     </div>
 </div>
