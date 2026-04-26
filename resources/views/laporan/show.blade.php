@@ -204,77 +204,43 @@
             </div>
 
             {{-- Tab: Diskusi --}}
-            <div id="tab-diskusi" class="lap-panel" style="display:none; padding-top:20px;">
+            <div id="tab-diskusi" class="lap-panel hidden pt-6">
 
                 {{-- Input Komentar --}}
-                <form action="{{ route('komentar.store', $laporan->id) }}" method="POST" style="display:flex; gap:12px; margin-bottom:24px; align-items:flex-start;">
+                <form action="{{ route('komentar.store', $laporan->id) }}" method="POST" class="flex gap-3 mb-7 items-start">
                     @csrf
-                    <div style="width:32px; height:32px; border-radius:50%; background:#D4621A; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; margin-top:4px;">
+                    <div class="w-9 h-9 rounded-full bg-orange-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5 tracking-wide">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
-                    <div style="flex:1;">
+                    <div class="flex-1">
                         <textarea name="isi" rows="3" required placeholder="Tulis komentar atau tanggapan..."
-                            style="width:100%; padding:11px 14px; border:1.5px solid #D8D4CC; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:13px; background:#FAFAF8; color:#1A1A18; outline:none; resize:none; line-height:1.5; box-sizing:border-box;"></textarea>
-                        <div style="text-align:right; margin-top:8px;">
-                            <button type="submit" style="padding:8px 20px; background:#D4621A; color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">
+                            class="w-full px-3.5 py-3 border border-stone-200 rounded-xl font-sans text-sm bg-stone-50 text-stone-900 outline-none resize-none leading-relaxed focus:border-orange-500 transition-colors"></textarea>
+                        <div class="text-right mt-2">
+                            <button type="submit"
+                                class="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-colors">
                                 Kirim Komentar
                             </button>
                         </div>
                     </div>
                 </form>
 
+                {{-- Divider --}}
+                <hr class="border-stone-100 mb-5">
+
                 {{-- List Komentar --}}
-                @forelse($laporan->komentars as $komentar)
-                <div style="display:flex; gap:12px; margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid #F0EDE8;" id="komentar-{{ $komentar->id }}">
-                    <div style="width:32px; height:32px; border-radius:50%; background:#7C9EB2; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0;">
-                        {{ strtoupper(substr($komentar->user->name, 0, 2)) }}
-                    </div>
-                    <div style="flex:1;">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                            <span style="font-size:13px; font-weight:600; color:#1A1A18;">{{ $komentar->user->name }}</span>
-                            <span style="font-size:11px; color:#8A8A7A;">{{ $komentar->created_at->format('d M Y, H:i') }}</span>
+                <div class="flex flex-col">
+                    @forelse($laporan->komentars as $komentar)
+                        <div class="py-4 border-b border-stone-100 last:border-b-0">
+                            @include('laporan.partials.komentar-item', ['komentar' => $komentar, 'laporan' => $laporan, 'depth' => 0])
                         </div>
-                        <div style="font-size:13px; color:#4A4A42; line-height:1.5; margin-bottom:8px;">{{ $komentar->isi }}</div>
-
-                        <button onclick="window.toggleReply({{ $komentar->id }})"
-                            style="font-size:12px; color:#D4621A; background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500;">
-                            ↩ Balas
-                        </button>
-
-                        {{-- Form Reply --}}
-                        <div id="reply-form-{{ $komentar->id }}" style="display:none; margin-top:12px; padding-left:20px; border-left:2px solid #F0EDE8;">
-                            <form action="{{ route('komentar.store', $laporan->id) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="parent_id" value="{{ $komentar->id }}">
-                                <textarea name="isi" rows="2" required placeholder="Tulis balasan..."
-                                    style="width:100%; padding:9px 12px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#FAFAF8; outline:none; resize:none; box-sizing:border-box;"></textarea>
-                                <div style="display:flex; gap:8px; margin-top:8px;">
-                                    <button type="submit" style="padding:6px 16px; background:#D4621A; color:#fff; border:none; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">Kirim</button>
-                                    <button type="button" onclick="window.toggleReply({{ $komentar->id }})" style="padding:6px 16px; border:1.5px solid #D8D4CC; background:transparent; color:#4A4A42; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer;">Batal</button>
-                                </div>
-                            </form>
+                    @empty
+                        <div class="text-center py-10 px-5">
+                            <div class="text-3xl mb-2">💬</div>
+                            <div class="text-sm font-medium text-stone-500">Belum ada komentar.</div>
+                            <div class="text-xs text-stone-400 mt-1">Jadilah yang pertama berkomentar!</div>
                         </div>
-
-                        {{-- Balasan --}}
-                        @foreach($komentar->replies as $reply)
-                        <div style="margin-top:12px; padding-left:20px; border-left:2px solid rgba(212,98,26,0.2);">
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                                <div style="width:24px; height:24px; border-radius:50%; background:#D4621A; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff;">
-                                    {{ strtoupper(substr($reply->user->name, 0, 2)) }}
-                                </div>
-                                <span style="font-size:12px; font-weight:600; color:#1A1A18;">{{ $reply->user->name }}</span>
-                                <span style="font-size:11px; color:#8A8A7A;">{{ $reply->created_at->format('d M Y, H:i') }}</span>
-                            </div>
-                            <div style="font-size:13px; color:#4A4A42; line-height:1.5;">{{ $reply->isi }}</div>
-                        </div>
-                        @endforeach
-                    </div>
+                    @endforelse
                 </div>
-                @empty
-                <div style="text-align:center; padding:32px; color:#8A8A7A; font-size:13px;">
-                    Belum ada komentar. Jadilah yang pertama berkomentar!
-                </div>
-                @endforelse
 
             </div>
         </div>

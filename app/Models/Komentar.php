@@ -27,4 +27,12 @@ class Komentar extends Model
     {
         return $this->hasMany(Komentar::class, 'parent_id');
     }
+
+    /**
+     * Recursive: replies with their nested replies, users, and parent user (for mention display).
+     */
+    public function allReplies()
+    {
+        return $this->hasMany(Komentar::class, 'parent_id')->with('user', 'parent.user', 'allReplies');
+    }
 }
