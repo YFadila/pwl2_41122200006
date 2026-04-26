@@ -96,17 +96,45 @@
                             <circle cx="8" cy="8" r="7" stroke="#D4621A" stroke-width="1.2" fill="none"/>
                             <path d="M8 7v4M8 5v.5" stroke="#D4621A" stroke-width="1.4" stroke-linecap="round"/>
                         </svg>
-                        <span style="font-size:12.5px; color:#854F0B; line-height:1.5;">Klik pada peta untuk menandai titik lokasi kejadian — alamat akan terisi otomatis.</span>
+                        <span style="font-size:12.5px; color:#854F0B; line-height:1.5;">Ketik alamat untuk mencari lokasi, klik peta, atau gunakan lokasi saat ini.</span>
                     </div>
 
                     <div style="display:grid; gap:18px;">
 
-                        {{-- Lokasi --}}
+                        {{-- Lokasi with autocomplete --}}
                         <div>
                             <label style="display:block; font-size:12px; font-weight:600; color:#4A4A42; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">Lokasi</label>
-                            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}"
-                                placeholder="Alamat lengkap lokasi (atau klik peta)"
-                                style="width:100%; padding:11px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:#fff; color:#1A1A18; outline:none; box-sizing:border-box;">
+                            <div style="position:relative;">
+                                <div style="position:relative;">
+                                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" autocomplete="off"
+                                        placeholder="Ketik alamat untuk mencari..."
+                                        style="width:100%; padding:11px 42px 11px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:#fff; color:#1A1A18; outline:none; box-sizing:border-box; transition: border-color 0.2s;">
+                                    {{-- Search icon --}}
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; opacity:0.4;">
+                                        <circle cx="7" cy="7" r="5" stroke="#4A4A42" stroke-width="1.4" fill="none"/>
+                                        <path d="M11 11l3 3" stroke="#4A4A42" stroke-width="1.4" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                {{-- Loading indicator --}}
+                                <div id="lokasi-loading" style="display:none; position:absolute; right:14px; top:13px;">
+                                    <div style="width:14px; height:14px; border:2px solid #E8E4DC; border-top-color:#D4621A; border-radius:50%; animation:spin-lokasi 0.6s linear infinite;"></div>
+                                </div>
+                                {{-- Autocomplete dropdown --}}
+                                <div id="lokasi-suggestions" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:#fff; border:1.5px solid #D8D4CC; border-top:none; border-radius:0 0 8px 8px; max-height:220px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.1);"></div>
+                            </div>
+                        </div>
+
+                        {{-- Gunakan Lokasi Saat Ini --}}
+                        <div>
+                            <button type="button" id="btn-geolocation" onclick="useCurrentLocation()"
+                                style="display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#F8F6F2; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#4A4A42; cursor:pointer; transition:all 0.2s;">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="8" r="3" stroke="#D4621A" stroke-width="1.4" fill="none"/>
+                                    <circle cx="8" cy="8" r="1" fill="#D4621A"/>
+                                    <path d="M8 1v3M8 12v3M1 8h3M12 8h3" stroke="#D4621A" stroke-width="1.4" stroke-linecap="round"/>
+                                </svg>
+                                <span id="geoloc-text">Gunakan Lokasi Saat Ini</span>
+                            </button>
                         </div>
 
                         {{-- Peta --}}
@@ -230,9 +258,18 @@
     {{-- Leaflet Map --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @keyframes spin-lokasi { to { transform: rotate(360deg); } }
+        .lokasi-item { padding:10px 14px; font-size:13px; color:#4A4A42; cursor:pointer; border-bottom:1px solid #F0EDE8; display:flex; align-items:flex-start; gap:10px; font-family:'DM Sans',sans-serif; transition: background 0.1s; }
+        .lokasi-item:last-child { border-bottom:none; }
+        .lokasi-item:hover { background:#FFF8F0; }
+        .lokasi-item svg { flex-shrink:0; margin-top:2px; }
+        #btn-geolocation:hover { background:#FFF8F0; border-color:#D4621A; color:#D4621A; }
+    </style>
     <script>
         var mapInitialized = false;
         var leafletMap, marker;
+        var searchTimeout = null;
 
         function initMap() {
             if (mapInitialized) return;
@@ -240,12 +277,25 @@
             leafletMap = L.map('map').setView([-6.2, 106.8], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(leafletMap);
             leafletMap.on('click', function(e) {
-                var lat = e.latlng.lat.toFixed(8);
-                var lng = e.latlng.lng.toFixed(8);
-                document.getElementById('latitude').value  = lat;
-                document.getElementById('longitude').value = lng;
-                if (marker) { marker.setLatLng(e.latlng); } else { marker = L.marker(e.latlng).addTo(leafletMap); }
-                fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json')
+                setMapLocation(e.latlng.lat, e.latlng.lng, true);
+            });
+        }
+
+        /* ── Set map marker, coords, and optionally reverse-geocode ── */
+        function setMapLocation(lat, lng, doReverse) {
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            document.getElementById('latitude').value  = lat.toFixed(8);
+            document.getElementById('longitude').value = lng.toFixed(8);
+
+            if (leafletMap) {
+                if (marker) { marker.setLatLng([lat, lng]); }
+                else { marker = L.marker([lat, lng]).addTo(leafletMap); }
+                leafletMap.setView([lat, lng], 16);
+            }
+
+            if (doReverse) {
+                fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&accept-language=id')
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
                         if (data.display_name) {
@@ -253,8 +303,102 @@
                             updateSummary();
                         }
                     });
-            });
+            }
+            updateSummary();
         }
+
+        /* ── Autocomplete: search Nominatim on typing ── */
+        (function() {
+            var input = document.getElementById('lokasi');
+            var dropdown = document.getElementById('lokasi-suggestions');
+            var loading = document.getElementById('lokasi-loading');
+
+            input.addEventListener('input', function() {
+                var q = this.value.trim();
+                clearTimeout(searchTimeout);
+                if (q.length < 3) { dropdown.style.display = 'none'; return; }
+
+                searchTimeout = setTimeout(function() {
+                    loading.style.display = 'block';
+                    fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=5&countrycodes=id&accept-language=id')
+                        .then(function(r) { return r.json(); })
+                        .then(function(results) {
+                            loading.style.display = 'none';
+                            if (!results.length) {
+                                dropdown.innerHTML = '<div style="padding:14px; font-size:13px; color:#8A8A7A; text-align:center;">Tidak ditemukan</div>';
+                                dropdown.style.display = 'block';
+                                return;
+                            }
+                            dropdown.innerHTML = results.map(function(r) {
+                                return '<div class="lokasi-item" data-lat="' + r.lat + '" data-lng="' + r.lon + '" data-name="' + escAttr(r.display_name) + '">'
+                                    + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1a4 4 0 0 1 4 4c0 3.5-4 8-4 8S3 8.5 3 5a4 4 0 0 1 4-4z" stroke="#D4621A" stroke-width="1.2" fill="none"/><circle cx="7" cy="5" r="1.2" fill="#D4621A"/></svg>'
+                                    + '<span>' + escHtml(r.display_name) + '</span></div>';
+                            }).join('');
+                            dropdown.style.display = 'block';
+                        })
+                        .catch(function() { loading.style.display = 'none'; });
+                }, 400);
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                var item = e.target.closest('.lokasi-item');
+                if (!item) return;
+                input.value = item.getAttribute('data-name');
+                dropdown.style.display = 'none';
+                setMapLocation(item.getAttribute('data-lat'), item.getAttribute('data-lng'), false);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#lokasi') && !e.target.closest('#lokasi-suggestions')) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        })();
+
+        /* ── Geolocation: use current location ── */
+        function useCurrentLocation() {
+            var btn = document.getElementById('btn-geolocation');
+            var txt = document.getElementById('geoloc-text');
+
+            if (!navigator.geolocation) {
+                alert('Browser tidak mendukung geolokasi.');
+                return;
+            }
+
+            btn.disabled = true;
+            txt.textContent = 'Mencari lokasi...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+
+                    if (!mapInitialized) {
+                        initMap();
+                        setTimeout(function() {
+                            if (leafletMap) leafletMap.invalidateSize();
+                            setMapLocation(lat, lng, true);
+                        }, 150);
+                    } else {
+                        setMapLocation(lat, lng, true);
+                    }
+
+                    btn.disabled = false;
+                    txt.textContent = 'Gunakan Lokasi Saat Ini';
+                },
+                function(err) {
+                    btn.disabled = false;
+                    txt.textContent = 'Gunakan Lokasi Saat Ini';
+                    if (err.code === 1) alert('Izin lokasi ditolak. Aktifkan izin lokasi di browser.');
+                    else alert('Gagal mendapatkan lokasi: ' + err.message);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        /* ── Helpers ── */
+        function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function escAttr(s) { return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
         function goToStep(step) {
             if (step === 2) {
