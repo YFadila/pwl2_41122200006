@@ -33,6 +33,9 @@ class LaporanController extends Controller
             if ($request->kategori) {
                 $query->where('kategori', $request->kategori);
             }
+            if (request('milik_saya')) {
+                $query->where('user_id', auth()->id());
+            }
 
             $laporans = $query->get();
 

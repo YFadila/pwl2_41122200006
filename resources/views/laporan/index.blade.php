@@ -33,6 +33,14 @@
                 <option value="Lainnya" @selected(request('kategori') == 'Lainnya')>Lainnya</option>
             </select>
 
+            <label style="display:flex; align-items:center; gap:8px; padding:9px 14px; border:1.5px solid {{ request('milik_saya') ? '#D4621A' : '#D8D4CC' }}; border-radius:8px; background:{{ request('milik_saya') ? '#FFF5EF' : '#fff' }}; cursor:pointer; white-space:nowrap; font-family:'DM Sans',sans-serif; font-size:13px; color:{{ request('milik_saya') ? '#D4621A' : '#4A4A42' }}; font-weight:{{ request('milik_saya') ? '600' : '400' }}; user-select:none; transition:all .15s;">
+                <input type="checkbox" name="milik_saya" value="1"
+                {{ request('milik_saya') ? 'checked' : '' }}
+                onchange="this.form.submit()"
+                style="accent-color:#D4621A; width:15px; height:15px; cursor:pointer;">
+                Laporan Saya
+            </label>    
+
             <button type="submit" style="padding:10px 18px; background:#D4621A; color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">Filter</button>
             <a href="{{ route('laporan.index') }}" style="padding:10px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-size:13px; color:#4A4A42; text-decoration:none;">Reset</a>
         </form>
