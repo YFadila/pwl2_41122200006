@@ -1,4 +1,5 @@
 <x-sidebar-layout>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <x-slot name="header">
         <div style="font-family:'DM Serif Display',serif; font-size:26px; color:#1A1A18; line-height:1.2;">Dashboard</div>
         <div style="color:#8A8A7A; font-size:13px; margin-top:4px;">Selamat datang kembali, {{ auth()->user()->name }} 👋</div>
@@ -9,45 +10,34 @@
         <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18; margin-bottom:16px;">Statistik</div>
         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
 
-            {{-- Total --}}
-            <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; position:relative; overflow:hidden; transition:transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
-                onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#1A1A18;"></div>
-                <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:12px;">Total Laporan</div>
-                <div style="font-family:'DM Serif Display',serif; font-size:38px; line-height:1; color:#1A1A18; margin-bottom:6px;">{{ $total }}</div>
-                <div style="font-size:11px; color:#8A8A7A;">Semua laporan masuk</div>
-            </div>
+            @foreach([
+                ['label' => 'Total Laporan', 'value' => $total,    'sub' => 'Semua laporan masuk', 'icon' => 'clipboard-list', 'color' => '#1A1A18', 'bg' => '#F5F4F0', 'url' => route('laporan.index')],
+                ['label' => 'Pending',        'value' => $pending,  'sub' => 'Menunggu tindakan',   'icon' => 'clock',          'color' => '#C9A227', 'bg' => '#FDF8EC', 'url' => route('laporan.index',['status' => 'pending'])],
+                ['label' => 'Diproses',       'value' => $diproses, 'sub' => 'Sedang ditangani',    'icon' => 'loader-circle',  'color' => '#2A5BA8', 'bg' => '#EEF3FC', 'url' => route('laporan.index',['status' => 'diproses'])],
+                ['label' => 'Selesai',        'value' => $selesai,  'sub' => 'Laporan dituntaskan', 'icon' => 'circle-check-big','color'=> '#2D7A4F', 'bg' => '#EDF7F2', 'url' => route('laporan.index',['status' => 'selesai'])],
+            ] as $stat)
+            <a href="{{ $stat['url'] }}" style="text-decoration:none; display:block;"
+                title="Lihat {{ $stat['label'] }}">
+                <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; display:flex; align-items:center; gap:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;"
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow=''">
 
-            {{-- Pending --}}
-            <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; position:relative; overflow:hidden; transition:transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
-                onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#C9A227;"></div>
-                <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:12px;">Pending</div>
-                <div style="font-family:'DM Serif Display',serif; font-size:38px; line-height:1; color:#C9A227; margin-bottom:6px;">{{ $pending }}</div>
-                <div style="font-size:11px; color:#8A8A7A;">Menunggu tindakan</div>
-            </div>
+                    {{-- Icon --}}
+                    <div style="width:44px; height:44px; border-radius:10px; background:{{ $stat['bg'] }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i data-lucide="{{ $stat['icon'] }}" style="width:20px; height:20px; color:{{ $stat['color'] }};"></i>
+                    </div>
 
-            {{-- Diproses --}}
-            <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; position:relative; overflow:hidden; transition:transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
-                onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#2A5BA8;"></div>
-                <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:12px;">Diproses</div>
-                <div style="font-family:'DM Serif Display',serif; font-size:38px; line-height:1; color:#2A5BA8; margin-bottom:6px;">{{ $diproses }}</div>
-                <div style="font-size:11px; color:#8A8A7A;">Sedang ditangani</div>
-            </div>
+                    {{-- Teks --}}
+                    <div style="text-align:center; flex:1;">
+                        <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:6px;">{{ $stat['label'] }}</div>
+                        <div style="font-family:'DM Serif Display',serif; font-size:34px; line-height:1; color:{{ $stat['color'] }}; margin-bottom:4px;">{{ $stat['value'] }}</div>
+                        <div style="font-size:11px; color:#8A8A7A;">{{ $stat['sub'] }}</div>
+                    </div>
 
-            {{-- Selesai --}}
-            <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; position:relative; overflow:hidden; transition:transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
-                onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#2D7A4F;"></div>
-                <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:12px;">Selesai</div>
-                <div style="font-family:'DM Serif Display',serif; font-size:38px; line-height:1; color:#2D7A4F; margin-bottom:6px;">{{ $selesai }}</div>
-                <div style="font-size:11px; color:#8A8A7A;">Laporan dituntaskan</div>
-            </div>
+                </div>
+            </a>
+            @endforeach
+
         </div>
     </div>
 
@@ -129,7 +119,6 @@
                         </div>
                     </div>
 
-                    {{-- Meta & Aksi --}}
                     <div style="display:flex; align-items:center; gap:16px; margin-left:16px; flex-shrink:0;">
                         <div style="text-align:center;">
                             <div style="font-size:16px; font-weight:700; color:#1A1A18;">{{ $laporan->komentars->count() }}</div>
@@ -140,4 +129,6 @@
             @endforeach
         </div>
     @endif
+
+    <script>lucide.createIcons();</script>
 </x-sidebar-layout>
