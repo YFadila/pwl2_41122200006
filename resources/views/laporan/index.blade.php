@@ -1,124 +1,263 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <h3 class="text-2xl font-bold text-gray-900" style="font-family: 'DM Serif Display', serif;">
-            Daftar Laporan
-        </h3>
-        <div style="color:#8A8A7A; font-size:13px; margin-top:4px;">Semua laporan yang masuk dari warga</div>
-    </x-slot>
-
-    {{-- Toolbar --}}
-    <div style="display:flex; gap:12px; margin-bottom:22px; align-items:center;">
-        <form method="GET" action="{{ route('laporan.index') }}" style="display:flex; gap:12px; flex:1; align-items:center;">
-
-            <div style="flex:1; position:relative;">
-                <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); color:#8A8A7A;">🔍</span>
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari laporan..."
-                    style="width:100%; padding:10px 14px 10px 38px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13.5px; background:#fff; color:#1A1A18; outline:none;">
+        {{-- Header: Judul + Search + CTA --}}
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900" style="font-family:'DM Serif Display',serif;">
+                    Daftar Laporan
+                </h3>
+                <p class="text-xs text-gray-400 mt-0.5">Semua laporan yang masuk dari warga</p>
             </div>
 
-            <select name="status" style="padding:10px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#fff; color:#4A4A42; outline:none; min-width:140px;">
-                <option value="">Semua Status</option>
-                <option value="pending" @selected(request('status') == 'pending')>Pending</option>
-                <option value="diproses" @selected(request('status') == 'diproses')>Diproses</option>
-                <option value="selesai" @selected(request('status') == 'selesai')>Selesai</option>
-            </select>
+            <div class="flex items-center gap-2.5">
+                {{-- Search (expand on click) --}}
+                <div id="search-wrapper" class="relative flex items-center">
+                    <form method="GET" action="{{ route('laporan.index') }}" id="search-form">
+                        @foreach(request()->except('search') as $k => $v)
+                            @if($v)<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endif
+                        @endforeach
 
-            <select name="kategori" style="padding:10px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:#fff; color:#4A4A42; outline:none; min-width:140px;">
-                <option value="">Semua Kategori</option>
-                <option value="Infrastruktur & Jalan" @selected(request('kategori') == 'Infrastruktur & Jalan')>Infrastruktur & Jalan</option>
-                <option value="Sampah & Kebersihan" @selected(request('kategori') == 'Sampah & Kebersihan')>Sampah & Kebersihan</option>
-                <option value="Air & Drainase" @selected(request('kategori') == 'Air & Drainase')>Air & Drainase</option>
-                <option value="Fasilitas Umum" @selected(request('kategori') == 'Fasilitas Umum')>Fasilitas Umum</option>
-                <option value="Lainnya" @selected(request('kategori') == 'Lainnya')>Lainnya</option>
-            </select>
+                        <input type="text" name="search" id="search-input"
+                            value="{{ request('search') }}"
+                            placeholder="Cari laporan..."
+                            class="transition-all duration-200 ease-in-out rounded-lg border border-transparent bg-white text-sm text-gray-800 outline-none pr-9 placeholder-gray-400"
+                            style="
+                                width: {{ request('search') ? '220px' : '0px' }};
+                                opacity: {{ request('search') ? '1' : '0' }};
+                                padding: {{ request('search') ? '8px 36px 8px 14px' : '8px 0' }};
+                                border-color: {{ request('search') ? '#D8D4CC' : 'transparent' }};
+                            ">
 
-            <label style="display:flex; align-items:center; gap:8px; padding:9px 14px; border:1.5px solid {{ request('milik_saya') ? '#D4621A' : '#D8D4CC' }}; border-radius:8px; background:{{ request('milik_saya') ? '#FFF5EF' : '#fff' }}; cursor:pointer; white-space:nowrap; font-family:'DM Sans',sans-serif; font-size:13px; color:{{ request('milik_saya') ? '#D4621A' : '#4A4A42' }}; font-weight:{{ request('milik_saya') ? '600' : '400' }}; user-select:none; transition:all .15s;">
-                <input type="checkbox" name="milik_saya" value="1"
-                {{ request('milik_saya') ? 'checked' : '' }}
-                onchange="this.form.submit()"
-                style="accent-color:#D4621A; width:15px; height:15px; cursor:pointer;">
-                Laporan Saya
-            </label>    
+                        <button type="submit" id="search-btn"
+                            class="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-stone-100 border border-stone-200 text-stone-600 hover:bg-stone-200 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
 
-            <button type="submit" style="padding:10px 18px; background:#D4621A; color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">Filter</button>
-            <a href="{{ route('laporan.index') }}" style="padding:10px 14px; border:1.5px solid #D8D4CC; border-radius:8px; font-size:13px; color:#4A4A42; text-decoration:none;">Reset</a>
+                {{-- CTA --}}
+                <a href="{{ route('laporan.create') }}"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#D4621A] hover:bg-[#B8511A] text-white text-sm font-semibold whitespace-nowrap transition-colors"
+                    style="font-family:'DM Sans',sans-serif;">
+                    + Buat Laporan
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
+    {{-- Filter Row --}}
+    <div class="sticky top-0 z-10 bg-[#F7F5F0] -mx-px mb-5 px-0 py-2.5 border-b border-stone-200">
+        <form method="GET" action="{{ route('laporan.index') }}" id="filter-form">
+            @if(request('search'))
+                <input type="hidden" name="search" value="{{ request('search') }}">
+            @endif
+
+            <div class="flex items-center gap-2 flex-wrap">
+
+                {{-- Chip: Status --}}
+                @php $hasStatus = (bool) request('status'); @endphp
+                <div class="relative">
+                    <select name="status" onchange="document.getElementById('filter-form').submit()"
+                        class="appearance-none cursor-pointer outline-none text-xs font-medium rounded-full pl-3.5 pr-8 py-1.5 border transition-colors
+                               {{ $hasStatus ? 'border-[#D4621A] bg-[#FFF5EF] text-[#D4621A] font-semibold' : 'border-stone-300 bg-white text-stone-600' }}"
+                        style="font-family:'DM Sans',sans-serif;">
+                        <option value="">Semua Status</option>
+                        <option value="pending"  @selected(request('status') == 'pending')>Pending</option>
+                        <option value="diproses" @selected(request('status') == 'diproses')>Diproses</option>
+                        <option value="selesai"  @selected(request('status') == 'selesai')>Selesai</option>
+                    </select>
+                    <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px]
+                                 {{ $hasStatus ? 'text-[#D4621A]' : 'text-stone-400' }}">▾</span>
+                </div>
+
+                {{-- Chip: Kategori --}}
+                @php $hasKategori = (bool) request('kategori'); @endphp
+                <div class="relative">
+                    <select name="kategori" onchange="document.getElementById('filter-form').submit()"
+                        class="appearance-none cursor-pointer outline-none text-xs font-medium rounded-full pl-3.5 pr-8 py-1.5 border transition-colors
+                               {{ $hasKategori ? 'border-[#D4621A] bg-[#FFF5EF] text-[#D4621A] font-semibold' : 'border-stone-300 bg-white text-stone-600' }}"
+                        style="font-family:'DM Sans',sans-serif;">
+                        <option value="">Semua Kategori</option>
+                        <option value="Infrastruktur & Jalan" @selected(request('kategori') == 'Infrastruktur & Jalan')>Infrastruktur & Jalan</option>
+                        <option value="Sampah & Kebersihan"   @selected(request('kategori') == 'Sampah & Kebersihan')>Sampah & Kebersihan</option>
+                        <option value="Air & Drainase"        @selected(request('kategori') == 'Air & Drainase')>Air & Drainase</option>
+                        <option value="Fasilitas Umum"        @selected(request('kategori') == 'Fasilitas Umum')>Fasilitas Umum</option>
+                        <option value="Lainnya"               @selected(request('kategori') == 'Lainnya')>Lainnya</option>
+                    </select>
+                    <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px]
+                                 {{ $hasKategori ? 'text-[#D4621A]' : 'text-stone-400' }}">▾</span>
+                </div>
+
+                {{-- Toggle Pill: Laporan Saya --}}
+                @php $milikSaya = (bool) request('milik_saya'); @endphp
+                <label class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border cursor-pointer select-none transition-colors
+                              {{ $milikSaya ? 'border-[#D4621A] bg-[#FFF5EF] text-[#D4621A] font-semibold' : 'border-stone-300 bg-white text-stone-600' }}"
+                    style="font-family:'DM Sans',sans-serif; font-size:12.5px;">
+                    {{-- Mini toggle switch --}}
+                    <span class="relative inline-block w-6 h-3.5 flex-shrink-0">
+                        <span class="block w-full h-full rounded-full transition-colors
+                                     {{ $milikSaya ? 'bg-[#D4621A]' : 'bg-stone-300' }}"></span>
+                        <span class="absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all
+                                     {{ $milikSaya ? 'left-[13px]' : 'left-0.5' }}"></span>
+                    </span>
+                    Laporan Saya
+                    <input type="checkbox" name="milik_saya" value="1"
+                        {{ $milikSaya ? 'checked' : '' }}
+                        onchange="document.getElementById('filter-form').submit()"
+                        class="absolute opacity-0 w-0 h-0">
+                </label>
+
+                {{-- Badge jumlah filter aktif --}}
+                @php
+                    $activeFilters = collect(['status', 'kategori', 'milik_saya'])
+                        ->filter(fn($k) => request($k))->count();
+                @endphp
+                @if($activeFilters > 0)
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#D4621A]/10 text-[#D4621A] text-xs font-semibold"
+                    title="{{ $activeFilters }} filter aktif">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none"
+                        stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    {{ $activeFilters }} aktif
+                </span>
+                @endif
+
+                <div class="flex-1"></div>
+
+                {{-- Reset filter --}}
+                @if(request('status') || request('kategori') || request('milik_saya') || request('search'))
+                <a href="{{ route('laporan.index') }}"
+                    class="text-xs text-stone-400 hover:text-[#D4621A] px-1.5 py-1 rounded transition-colors"
+                    style="font-family:'DM Sans',sans-serif;">
+                    Reset filter
+                </a>
+                @endif
+
+            </div>
         </form>
-
-        <a href="{{ route('laporan.create') }}" style="padding:10px 20px; background:#D4621A; color:#fff; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; display:flex; align-items:center; gap:7px;">
-            + Buat Laporan
-        </a>
     </div>
 
+    {{-- Flash Message --}}
     @if(session('success'))
-        <div style="background:#D1FAE5; color:#1A5C38; padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:13px;">{{ session('success') }}</div>
+    <div class="bg-emerald-50 text-emerald-800 px-4 py-3 rounded-lg mb-4 text-sm">
+        {{ session('success') }}
+    </div>
     @endif
 
     {{-- Grid Laporan --}}
-    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+    <div class="grid grid-cols-2 gap-4">
         @forelse($laporans as $laporan)
-        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:20px 22px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;"
-            onclick="window.location='{{ route('laporan.show', $laporan) }}'"
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.07)';this.style.borderColor='#E8A87C'"
-            onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='#D8D4CC'">
+
+        @php
+            $badgeClass = match($laporan->status) {
+                'pending'  => 'bg-amber-50 text-amber-700',
+                'diproses' => 'bg-blue-50 text-blue-700',
+                default    => 'bg-emerald-50 text-emerald-700',
+            };
+        @endphp
+
+        <div class="bg-white rounded-xl border border-stone-200 p-5 cursor-pointer transition-all duration-200
+                    hover:-translate-y-0.5 hover:shadow-lg hover:border-[#E8A87C]"
+            onclick="window.location='{{ route('laporan.show', $laporan) }}'">
 
             {{-- Card Top --}}
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                <span style="font-size:10px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#D4621A; background:rgba(212,98,26,0.08); padding:3px 9px; border-radius:20px;">
+            <div class="flex items-start justify-between mb-2.5">
+                <span class="text-[10px] font-semibold tracking-widest uppercase text-[#D4621A] bg-[#D4621A]/8 px-2.5 py-1 rounded-full">
                     {{ $laporan->kategori }}
                 </span>
-                @php
-                    $badgeStyle = match($laporan->status) {
-                        'pending'  => 'background:#FEF3CD; color:#92740E;',
-                        'diproses' => 'background:#DBEAFE; color:#1E4A8A;',
-                        default    => 'background:#D1FAE5; color:#1A5C38;',
-                    };
-                @endphp
-                <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; {{ $badgeStyle }}">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold {{ $badgeClass }}">
                     {{ ucfirst($laporan->status) }}
                 </span>
             </div>
 
             {{-- Title & Desc --}}
-            <div style="font-family:'DM Serif Display',serif; font-size:16px; color:#1A1A18; margin-bottom:6px; line-height:1.3;">
+            <div class="text-base text-gray-900 mb-1.5 leading-snug" style="font-family:'DM Serif Display',serif;">
                 {{ $laporan->judul }}
             </div>
-            <div style="font-size:12.5px; color:#8A8A7A; line-height:1.5; margin-bottom:16px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+            <p class="text-xs text-stone-400 leading-relaxed mb-4 line-clamp-2">
                 {{ $laporan->deskripsi }}
-            </div>
+            </p>
 
             {{-- Card Footer --}}
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid #F0EDE8;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#D4621A,#E8A87C); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff;">
+            <div class="flex items-center justify-between pt-3.5 border-t border-stone-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                        style="background:linear-gradient(135deg,#D4621A,#E8A87C)">
                         {{ strtoupper(substr($laporan->user->name, 0, 2)) }}
                     </div>
                     <div>
-                        <div style="font-size:12px; font-weight:500; color:#4A4A42;">{{ $laporan->user->name }}</div>
-                        <div style="font-size:11px; color:#8A8A7A;">{{ $laporan->created_at->format('d M Y') }}</div>
+                        <div class="text-xs font-medium text-stone-700">{{ $laporan->user->name }}</div>
+                        <div class="text-[11px] text-stone-400">{{ $laporan->created_at->format('d M Y') }}</div>
                     </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    {{-- Jumlah Komentar --}}
-                    <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A;">
+
+                <div class="flex items-center gap-2.5">
+                    <span class="flex items-center gap-1 text-[11px] text-stone-400">
                         💬 {{ $laporan->komentars->count() }}
                     </span>
 
                     @if(auth()->user()->isAdmin())
-                    <form action="{{ route('laporan.destroy', $laporan) }}" method="POST" onclick="event.stopPropagation()" onsubmit="return confirm('Hapus laporan ini?')" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" style="font-size:12px; color:#dc2626; background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif;">Hapus</button>
+                    <form action="{{ route('laporan.destroy', $laporan) }}" method="POST"
+                        onclick="event.stopPropagation()"
+                        onsubmit="return confirm('Hapus laporan ini?')"
+                        class="inline">
+                        @csrf @method('DELETE')
+                        <button type="submit"
+                            class="text-xs text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer transition-colors"
+                            style="font-family:'DM Sans',sans-serif;">
+                            Hapus
+                        </button>
                     </form>
                     @endif
                 </div>
             </div>
         </div>
+
         @empty
-        <div style="grid-column:1/-1; text-align:center; padding:48px; color:#8A8A7A; font-size:14px;">
+        <div class="col-span-2 text-center py-12 text-stone-400 text-sm">
             Belum ada laporan
         </div>
         @endforelse
     </div>
 
 </x-sidebar-layout>
+
+<script>
+(function () {
+    const wrapper = document.getElementById('search-wrapper');
+    const btn     = document.getElementById('search-btn');
+    const input   = document.getElementById('search-input');
+    if (!btn || !input) return;
+
+    const open = () => {
+        input.style.width       = '220px';
+        input.style.opacity     = '1';
+        input.style.padding     = '8px 36px 8px 14px';
+        input.style.borderColor = '#D8D4CC';
+        input.dataset.open      = 'true';
+        input.focus();
+    };
+
+    const close = () => {
+        input.style.width       = '0px';
+        input.style.opacity     = '0';
+        input.style.padding     = '8px 0';
+        input.style.borderColor = 'transparent';
+        input.dataset.open      = 'false';
+    };
+
+    if (input.value.trim()) { input.dataset.open = 'true'; }
+
+    btn.addEventListener('click', (e) => {
+        if (input.dataset.open !== 'true') { e.preventDefault(); open(); }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target) && !input.value.trim()) close();
+    });
+})();
+</script>
