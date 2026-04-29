@@ -207,9 +207,16 @@
                         class="inline">
                         @csrf @method('DELETE')
                         <button type="submit"
-                            class="text-xs text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer transition-colors"
-                            style="font-family:'DM Sans',sans-serif;">
-                            Hapus
+                            class="p-1.5 rounded-md text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Hapus laporan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6M14 11v6"/>
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            </svg>
                         </button>
                     </form>
                     @endif
