@@ -41,94 +41,156 @@
         </div>
     </div>
 
-    {{-- DAFTAR LAPORAN --}}
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18;">
-            {{ auth()->user()->isAdmin() ? 'Semua Laporan Terbaru' : 'Laporan Saya' }}
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            {{-- Tombol Buat Laporan Khusus Warga --}}
-            @if(!auth()->user()->isAdmin())
-            <a href="{{ route('laporan.create') }}"
-                style="padding:7px 16px; background:#D4621A; color:#fff; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; text-decoration:none;">
-                + Buat Laporan
-            </a>
-            @endif
-            
-            <a href="{{ route('laporan.index') }}"
-                style="padding:7px 16px; border:1.5px solid #D4621A; background:transparent; color:#D4621A; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; text-decoration:none;"
-                onmouseover="this.style.background='#D4621A';this.style.color='#fff'"
-                onmouseout="this.style.background='transparent';this.style.color='#D4621A'">
-                Lihat Semua →
-            </a>
-        </div>
-    </div>
+{{-- DAFTAR LAPORAN --}}
+    <section>
 
-    @php 
-        $daftarLaporan = auth()->user()->isAdmin() ? $terbaru : $myLaporan; 
+    @php
+        $isAdmin       = auth()->user()->isAdmin();
+        $daftarLaporan = $isAdmin ? $terbaru : $myLaporan;
+
+        $statusConfig = fn($status) => match($status) {
+            'pending'  => ['badge' => 'bg-amber-50 text-amber-700',    'bar' => 'bg-amber-400',    'dot' => 'bg-amber-400'],
+            'diproses' => ['badge' => 'bg-blue-50 text-blue-700',      'bar' => 'bg-blue-500',     'dot' => 'bg-blue-500'],
+            default    => ['badge' => 'bg-emerald-50 text-emerald-700', 'bar' => 'bg-emerald-500',  'dot' => 'bg-emerald-500'],
+        };
     @endphp
 
-    @if($daftarLaporan->isEmpty())
-        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:48px; text-align:center;">
-            <div style="font-size:32px; margin-bottom:12px; opacity:0.3;">📋</div>
-            <div style="font-size:14px; color:#8A8A7A; margin-bottom:16px;">Belum ada laporan yang tersedia</div>
-            @if(!auth()->user()->isAdmin())
-            <a href="{{ route('laporan.create') }}"
-                style="padding:10px 24px; background:#D4621A; color:#fff; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; text-decoration:none;">
-                Buat Laporan Pertama
-            </a>
-            @endif
-        </div>
-    @else
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            @foreach($daftarLaporan as $laporan)
+    @if($isAdmin)
+        {{-- ADMIN --}}
+        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1.5px solid #D8D4CC;">
+                <div style="font-family:'DM Serif Display',serif; font-size:15px; color:#1A1A18;">Semua Laporan Terbaru</div>
+                <a href="{{ route('laporan.index') }}"
+                    style="font-size:12px; color:#D4621A; text-decoration:none; font-family:'DM Sans',sans-serif;">
+                    Lihat semua →
+                </a>
+            </div>
+
+            @if($terbaru->isEmpty())
+                <div style="padding:32px; text-align:center; color:#8A8A7A; font-size:13px;">Belum ada laporan masuk</div>
+            @else
+                @foreach($terbaru as $laporan)
                 @php
-                    $badgeStyle = match($laporan->status) {
-                        'pending'  => 'background:#FEF3CD; color:#92740E;',
-                        'diproses' => 'background:#DBEAFE; color:#1E4A8A;',
-                        default    => 'background:#D1FAE5; color:#1A5C38;',
-                    };
-                    $dotColor = match($laporan->status) {
-                        'pending'  => '#C9A227',
-                        'diproses' => '#2A5BA8',
-                        default    => '#2D7A4F',
-                    };
+                    $sc = $statusConfig($laporan->status);
+                    $lokasiPendek = implode(', ', array_slice(explode(', ', $laporan->lokasi), 0, 3));
                 @endphp
-
-                <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:18px 22px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s; cursor:pointer;"
-                    onmouseover="this.style.borderColor='#E8A87C';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'"
-                    onmouseout="this.style.borderColor='#D8D4CC';this.style.boxShadow=''"
-                    onclick="window.location='{{ route('laporan.show', $laporan) }}'">
-
-                    {{-- Info Laporan --}}
-                    <div style="flex:1; min-width:0;">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                            <span style="font-size:10px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#D4621A; background:rgba(212,98,26,0.08); padding:2px 8px; border-radius:20px;">
-                                {{ $laporan->kategori }}
-                            </span>
-                            <span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; {{ $badgeStyle }}">
-                                <span style="width:5px; height:5px; border-radius:50%; background:{{ $dotColor }}; display:inline-block;"></span>
-                                {{ ucfirst($laporan->status) }}
-                            </span>
+                <div style="display:flex; overflow:hidden; border-bottom:1px solid #F5F2ED; cursor:pointer; transition:background 0.15s;"
+                    onclick="window.location='{{ route('laporan.show', $laporan) }}'"
+                    onmouseover="this.style.background='#FAFAF8'" onmouseout="this.style.background=''">
+                    <div class="{{ $sc['bar'] }}" style="width:3px; flex-shrink:0;"></div>
+                    
+                    {{-- Konten Kiri (Disamakan dengan warga: padding 14px 18px) --}}
+                    <div style="flex:1; padding:14px 18px; min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;">
+                            <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#D4621A;">{{ $laporan->kategori }}</span>
+                            <span style="color:#D8D4CC; font-size:10px;">·</span>
+                            <span style="font-size:11px; color:#8A8A7A;">{{ $laporan->created_at->format('d M Y') }}</span>
                         </div>
-                        <div style="font-family:'DM Serif Display',serif; font-size:15px; color:#1A1A18; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:480px;">
+                        {{-- Ukuran font disamakan menjadi 15px --}}
+                        <div style="font-size:15px; color:#1A1A18; font-family:'DM Serif Display',serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px;">
                             {{ $laporan->judul }}
                         </div>
-                        <div style="font-size:12px; color:#8A8A7A;">
-                            📍 {{ $laporan->lokasi }} · {{ $laporan->created_at->format('d M Y') }}
+                        <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A; overflow:hidden;">
+                            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $lokasiPendek }}</span>
                         </div>
                     </div>
 
-                    <div style="display:flex; align-items:center; gap:16px; margin-left:16px; flex-shrink:0;">
-                        <div style="text-align:center;">
-                            <div style="font-size:16px; font-weight:700; color:#1A1A18;">{{ $laporan->komentars->count() }}</div>
-                            <div style="font-size:10px; color:#8A8A7A;">💬 Komentar</div>
+                    {{-- Konten Kanan (Disamakan dengan warga: padding 14px 18px) --}}
+                    <div style="padding:14px 18px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; flex-shrink:0; gap:8px;">
+                        {{-- Badge padding disamakan menjadi 3px 10px --}}
+                        <span class="{{ $sc['badge'] }}" style="font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                            <span class="{{ $sc['dot'] }}" style="width:5px; height:5px; border-radius:50%; display:inline-block;"></span>
+                            {{ ucfirst($laporan->status) }}
+                        </span>
+                        <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A;">
+                            <div style="width:20px; height:20px; border-radius:50%; background:#D4621A; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:700; color:#fff;">
+                                {{ strtoupper(substr($laporan->user->name, 0, 2)) }}
+                            </div>
+                            <span style="max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $laporan->user->name }}</span>
+                            <span style="color:#D8D4CC;">·</span>
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            {{-- Font weight dan warna text komentar disamakan --}}
+                            <span style="font-weight:600; color:#4A4A42;">{{ $laporan->komentars->count() }}</span>
                         </div>
                     </div>
                 </div>
-            @endforeach
+                @endforeach
+            @endif
+        </div>
+
+    @else
+        {{-- WARGA --}}
+        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; overflow:hidden;">
+
+            {{-- Header --}}
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1.5px solid #D8D4CC;">
+                <div style="font-family:'DM Serif Display',serif; font-size:15px; color:#1A1A18;">Laporan Saya</div>
+                <div style="display:flex; gap:8px;">
+                    <a href="{{ route('laporan.create') }}"
+                        style="padding:6px 14px; background:#D4621A; color:#fff; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; font-family:'DM Sans',sans-serif;">
+                        + Buat Laporan
+                    </a>
+                    <a href="{{ route('laporan.index') }}"
+                        style="padding:6px 14px; border:1.5px solid #D4621A; color:#D4621A; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; font-family:'DM Sans',sans-serif;">
+                        Lihat Semua →
+                    </a>
+                </div>
+            </div>
+
+            {{-- List --}}
+            @if($myLaporan->isEmpty())
+                <div style="padding:48px 24px; text-align:center;">
+                    <div style="font-size:36px; margin-bottom:12px; opacity:0.25;">📋</div>
+                    <div style="font-size:14px; color:#4A4A42; font-weight:500; margin-bottom:6px;">Belum ada laporan</div>
+                    <div style="font-size:13px; color:#8A8A7A; margin-bottom:20px;">Laporkan masalah di lingkungan kamu</div>
+                    <a href="{{ route('laporan.create') }}"
+                        style="display:inline-block; padding:10px 24px; background:#D4621A; color:#fff; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; font-family:'DM Sans',sans-serif;">
+                        Buat Laporan Pertama
+                    </a>
+                </div>
+            @else
+                @foreach($myLaporan as $laporan)
+                @php
+                    $sc = $statusConfig($laporan->status);
+                    $lokasiPendek = implode(', ', array_slice(explode(', ', $laporan->lokasi), 0, 3));
+                @endphp
+                <div style="display:flex; overflow:hidden; border-bottom:1px solid #F5F2ED; cursor:pointer; transition:background 0.15s;"
+                    onclick="window.location='{{ route('laporan.show', $laporan) }}'"
+                    onmouseover="this.style.background='#FAFAF8'" onmouseout="this.style.background=''">
+                    <div class="{{ $sc['bar'] }}" style="width:3px; flex-shrink:0;"></div>
+                    <div style="flex:1; padding:14px 18px; min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;">
+                            <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#D4621A;">{{ $laporan->kategori }}</span>
+                            <span style="color:#D8D4CC;">·</span>
+                            <span style="font-size:11px; color:#8A8A7A;">{{ $laporan->created_at->format('d M Y') }}</span>
+                        </div>
+                        <div style="font-size:15px; color:#1A1A18; font-family:'DM Serif Display',serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px;">
+                            {{ $laporan->judul }}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A; overflow:hidden;">
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $lokasiPendek }}</span>
+                        </div>
+                    </div>
+                    <div style="padding:14px 18px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; flex-shrink:0; gap:8px;">
+                        <span class="{{ $sc['badge'] }}" style="font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                            <span class="{{ $sc['dot'] }}" style="width:5px; height:5px; border-radius:50%; display:inline-block;"></span>
+                            {{ ucfirst($laporan->status) }}
+                        </span>
+                        <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:#8A8A7A;">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span style="font-weight:600; color:#4A4A42;">{{ $laporan->komentars->count() }}</span>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @endif
+
         </div>
     @endif
 
-    <script>lucide.createIcons();</script>
+    </section>
+
 </x-sidebar-layout>
+<script>lucide.createIcons();</script>
