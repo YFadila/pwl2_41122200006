@@ -275,6 +275,18 @@
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
 
+        window.toggleEdit = function(id) {
+            const content = document.getElementById('komentar-content-' + id);
+            const editForm = document.getElementById('edit-form-' + id);
+            if (editForm.style.display === 'none') {
+                editForm.style.display = 'block';
+                content.style.display = 'none';
+            } else {
+                editForm.style.display = 'none';
+                content.style.display = 'block';
+            }
+        }
+
         // --- Fitur Lightbox ---
         window.openLightbox = function(src) {
             document.getElementById('lightbox-img').src = src;

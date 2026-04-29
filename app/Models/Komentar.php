@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Komentar extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['user_id', 'laporan_id', 'parent_id', 'isi'];
 
     public function user()
@@ -18,9 +21,13 @@ class Komentar extends Model
         return $this->belongsTo(Laporan::class);
     }
 
+    /**
+     * Parent comment — includes soft-deleted parents so replies can
+     * show "komentar tidak tersedia" when the parent has been removed.
+     */
     public function parent()
     {
-        return $this->belongsTo(Komentar::class, 'parent_id');
+        return $this->belongsTo(Komentar::class, 'parent_id')->withTrashed();
     }
 
     public function replies()

@@ -22,6 +22,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('laporan', LaporanController::class)->except(['edit', 'update', 'destroy']);
 
     Route::post('/laporan/{laporan_id}/komentar', [KomentarController::class, 'store'])->name('komentar.store');
+    Route::put('/komentar/{komentar}', [KomentarController::class, 'update'])->name('komentar.update');
+    Route::delete('/komentar/{komentar}', [KomentarController::class, 'destroy'])->name('komentar.destroy');
 
     Route::get('/notifikasi/json', [NotifikasiController::class, 'getJson'])->name('notifikasi.json');
     Route::post('/notifikasi/mark-read', [NotifikasiController::class, 'markRead'])->name('notifikasi.markRead');

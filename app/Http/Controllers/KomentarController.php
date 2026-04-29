@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class KomentarController extends Controller
 {
- public function store(Request $request, $laporan_id)
+    public function store(Request $request, $laporan_id)
     {
         $request->validate([
             'isi'       => 'required|string',
@@ -25,9 +25,32 @@ class KomentarController extends Controller
         return redirect()->back()->with('success', 'Komentar berhasil ditambahkan!');
     }
 
+    public function update(Request $request, Komentar $komentar)
+    {
+        // Pastikan hanya pemilik komentar yang bisa mengedit
+        if ($komentar->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki izin untuk mengedit komentar ini.');
+        }
+
+        $request->validate([
+            'isi' => 'required|string',
+        ]);
+
+        $komentar->update([
+            'isi' => $request->isi,
+        ]);
+
+        return redirect()->back()->with('success', 'Komentar berhasil diperbarui!');
+    }
+
     public function destroy(Komentar $komentar)
     {
-        $komentar->delete();
+        // Pastikan hanya pemilik komentar yang bisa menghapus
+        if ($komentar->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki izin untuk menghapus komentar ini.');
+        }
+
+        $komentar->delete(); // Soft delete
         return redirect()->back()->with('success', 'Komentar berhasil dihapus!');
     }
 }
