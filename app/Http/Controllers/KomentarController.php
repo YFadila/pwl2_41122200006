@@ -22,12 +22,35 @@ class KomentarController extends Controller
             'isi'        => $request->isi,
         ]);
 
-        return redirect()->back()->with('success', 'Komentar berhasil ditambahkan!');
+        $laporan = \App\Models\Laporan::find($laporan_id);
+
+        if (!$request->parent_id && $laporan->user_id !== Auth::id()) {
+            \App\Models\Notifikasi::create([
+                'user_id'    => $laporan->user_id,
+                'laporan_id' => $laporan_id,
+                'pesan'      => Auth::user()->name . ' menambahkan komentar pada laporan Anda "' . $laporan->judul . '".',
+                'dibaca'     => false,
+            ]);
+        }
+
+        if ($request->parent_id) {
+            $komentarInduk = \App\Models\Komentar::find($request->parent_id);
+            if ($komentarInduk && $komentarInduk->user_id !== Auth::id()) {
+                \App\Models\Notifikasi::create([
+                    'user_id'    => $komentarInduk->user_id,
+                    'laporan_id' => $laporan_id,
+                    'pesan'      => Auth::user()->name . ' membalas komentar Anda pada laporan "' . $laporan->judul . '".',
+                    'dibaca'     => false,
+                ]);
+            }
+        }
+
+        return redirect()->route('laporan.show', $laporan_id)
+                        ->with('success', 'Komentar berhasil ditambahkan!');
     }
 
     public function update(Request $request, Komentar $komentar)
     {
-        // Pastikan hanya pemilik komentar yang bisa mengedit
         if ($komentar->user_id !== Auth::id()) {
             abort(403, 'Anda tidak memiliki izin untuk mengedit komentar ini.');
         }

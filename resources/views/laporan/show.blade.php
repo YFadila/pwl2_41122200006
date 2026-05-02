@@ -203,40 +203,40 @@
                 </div>
             </div>
 
-{{-- Tab: Diskusi --}}
-<div id="tab-diskusi" class="lap-panel hidden pt-6">
+            {{-- Tab: Diskusi --}}
+            <div id="tab-diskusi" class="lap-panel hidden pt-6">
 
-    {{-- Input Komentar - Discord style --}}
-    <form action="{{ route('komentar.store', $laporan->id) }}" method="POST" class="mb-6">
-        @csrf
-        <div class="flex gap-3 items-start bg-stone-100 rounded-xl px-3 py-2.5">
-            <div class="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">
-                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                {{-- Input Komentar - Discord style --}}
+                <form action="{{ route('komentar.store', $laporan->id) }}" method="POST" class="mb-6">
+                    @csrf
+                    <div class="flex gap-3 items-start bg-stone-100 rounded-xl px-3 py-2.5">
+                        <div class="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                        </div>
+                        <textarea name="isi" rows="1" required placeholder="Tulis komentar..."
+                            class="flex-1 bg-transparent border-none outline-none resize-none text-sm text-stone-900 placeholder-stone-400 leading-relaxed py-1 font-sans"
+                            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                        <button type="submit"
+                            class="self-end px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors flex-shrink-0">
+                            Kirim
+                        </button>
+                    </div>
+                </form>
+
+                {{-- List Komentar --}}
+                <div class="flex flex-col">
+                    @forelse($laporan->komentars as $komentar)
+                        @include('laporan.partials.komentar-item', ['komentar' => $komentar, 'laporan' => $laporan, 'depth' => 0])
+                    @empty
+                        <div class="text-center py-10 px-5">
+                            <div class="text-3xl mb-2">💬</div>
+                            <div class="text-sm font-medium text-stone-500">Belum ada komentar.</div>
+                            <div class="text-xs text-stone-400 mt-1">Jadilah yang pertama berkomentar!</div>
+                        </div>
+                    @endforelse
+                </div>
+
             </div>
-            <textarea name="isi" rows="1" required placeholder="Tulis komentar..."
-                class="flex-1 bg-transparent border-none outline-none resize-none text-sm text-stone-900 placeholder-stone-400 leading-relaxed py-1 font-sans"
-                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-            <button type="submit"
-                class="self-end px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors flex-shrink-0">
-                Kirim
-            </button>
-        </div>
-    </form>
-
-    {{-- List Komentar --}}
-    <div class="flex flex-col">
-        @forelse($laporan->komentars as $komentar)
-            @include('laporan.partials.komentar-item', ['komentar' => $komentar, 'laporan' => $laporan, 'depth' => 0])
-        @empty
-            <div class="text-center py-10 px-5">
-                <div class="text-3xl mb-2">💬</div>
-                <div class="text-sm font-medium text-stone-500">Belum ada komentar.</div>
-                <div class="text-xs text-stone-400 mt-1">Jadilah yang pertama berkomentar!</div>
-            </div>
-        @endforelse
-    </div>
-
-</div>
         </div>
     </div>
 
