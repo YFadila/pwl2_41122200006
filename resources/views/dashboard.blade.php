@@ -7,27 +7,37 @@
 
     {{-- STATISTIK --}}
     <div style="margin-bottom:32px;">
-        <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18; margin-bottom:16px;">Statistik</div>
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+        <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18; margin-bottom:16px;">
+            Ringkasan Laporan
+        </div>
 
-            @foreach([
-                ['label' => 'Total Laporan', 'value' => $total,    'sub' => 'Semua laporan masuk', 'icon' => 'clipboard-list', 'color' => '#1A1A18', 'bg' => '#F5F4F0', 'url' => route('laporan.index')],
-                ['label' => 'Pending',        'value' => $pending,  'sub' => 'Menunggu tindakan',   'icon' => 'clock',          'color' => '#C9A227', 'bg' => '#FDF8EC', 'url' => route('laporan.index',['status' => 'pending'])],
-                ['label' => 'Diproses',       'value' => $diproses, 'sub' => 'Sedang ditangani',    'icon' => 'loader-circle',  'color' => '#2A5BA8', 'bg' => '#EEF3FC', 'url' => route('laporan.index',['status' => 'diproses'])],
-                ['label' => 'Selesai',        'value' => $selesai,  'sub' => 'Laporan dituntaskan', 'icon' => 'circle-check-big','color'=> '#2D7A4F', 'bg' => '#EDF7F2', 'url' => route('laporan.index',['status' => 'selesai'])],
-            ] as $stat)
-            <a href="{{ $stat['url'] }}" style="text-decoration:none; display:block;"
-                title="Lihat {{ $stat['label'] }}">
+        @php
+            $stats = auth()->user()->isAdmin()
+                ? [
+                    ['label' => 'Total Laporan', 'value' => $total,    'sub' => 'Semua laporan masuk', 'icon' => 'clipboard-list',  'color' => '#1A1A18', 'bg' => '#F5F4F0', 'url' => route('laporan.index')],
+                    ['label' => 'Pending',        'value' => $pending,  'sub' => 'Menunggu tindakan',   'icon' => 'clock',           'color' => '#C9A227', 'bg' => '#FDF8EC', 'url' => route('laporan.index', ['status' => 'pending'])],
+                    ['label' => 'Diproses',       'value' => $diproses, 'sub' => 'Sedang ditangani',    'icon' => 'loader-circle',   'color' => '#2A5BA8', 'bg' => '#EEF3FC', 'url' => route('laporan.index', ['status' => 'diproses'])],
+                    ['label' => 'Selesai',        'value' => $selesai,  'sub' => 'Laporan dituntaskan', 'icon' => 'circle-check-big','color' => '#2D7A4F', 'bg' => '#EDF7F2', 'url' => route('laporan.index', ['status' => 'selesai'])],
+                ]
+                : [
+                    ['label' => 'Total Laporan', 'value' => $myTotal,    'sub' => 'Semua laporan saya',  'icon' => 'clipboard-list',  'color' => '#1A1A18', 'bg' => '#F5F4F0', 'url' => route('laporan.index', ['milik_saya' => true])],
+                    ['label' => 'Pending',        'value' => $myPending,  'sub' => 'Menunggu tindakan',   'icon' => 'clock',           'color' => '#C9A227', 'bg' => '#FDF8EC', 'url' => route('laporan.index', ['status' => 'pending'])],
+                    ['label' => 'Diproses',       'value' => $myDiproses, 'sub' => 'Sedang ditangani',    'icon' => 'loader-circle',   'color' => '#2A5BA8', 'bg' => '#EEF3FC', 'url' => route('laporan.index', ['status' => 'diproses'])],
+                    ['label' => 'Selesai',        'value' => $mySelesai,  'sub' => 'Laporan dituntaskan', 'icon' => 'circle-check-big','color' => '#2D7A4F', 'bg' => '#EDF7F2', 'url' => route('laporan.index', ['status' => 'selesai'])],
+                ];
+        @endphp
+
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+            @foreach($stats as $stat)
+            <a href="{{ $stat['url'] }}" style="text-decoration:none; display:block;" title="Lihat {{ $stat['label'] }}">
                 <div style="background:#fff; border-radius:12px; padding:20px 22px; border:1.5px solid #D8D4CC; display:flex; align-items:center; gap:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;"
                     onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)'"
                     onmouseout="this.style.transform='';this.style.boxShadow=''">
 
-                    {{-- Icon --}}
                     <div style="width:44px; height:44px; border-radius:10px; background:{{ $stat['bg'] }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i data-lucide="{{ $stat['icon'] }}" style="width:20px; height:20px; color:{{ $stat['color'] }};"></i>
                     </div>
 
-                    {{-- Teks --}}
                     <div style="text-align:center; flex:1;">
                         <div style="font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:#8A8A7A; margin-bottom:6px;">{{ $stat['label'] }}</div>
                         <div style="font-family:'DM Serif Display',serif; font-size:34px; line-height:1; color:{{ $stat['color'] }}; margin-bottom:4px;">{{ $stat['value'] }}</div>
@@ -37,11 +47,10 @@
                 </div>
             </a>
             @endforeach
-
         </div>
     </div>
 
-{{-- DAFTAR LAPORAN --}}
+    {{-- DAFTAR LAPORAN --}}
     <section>
 
     @php
@@ -77,16 +86,13 @@
                 <div style="display:flex; overflow:hidden; border-bottom:1px solid #F5F2ED; cursor:pointer; transition:background 0.15s;"
                     onclick="window.location='{{ route('laporan.show', $laporan) }}'"
                     onmouseover="this.style.background='#FAFAF8'" onmouseout="this.style.background=''">
-                    <div class="{{ $sc['bar'] }}" style="width:3px; flex-shrink:0;"></div>
                     
-                    {{-- Konten Kiri (Disamakan dengan warga: padding 14px 18px) --}}
                     <div style="flex:1; padding:14px 18px; min-width:0;">
                         <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;">
                             <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#D4621A;">{{ $laporan->kategori }}</span>
                             <span style="color:#D8D4CC; font-size:10px;">·</span>
                             <span style="font-size:11px; color:#8A8A7A;">{{ $laporan->created_at->format('d M Y') }}</span>
                         </div>
-                        {{-- Ukuran font disamakan menjadi 15px --}}
                         <div style="font-size:15px; color:#1A1A18; font-family:'DM Serif Display',serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px;">
                             {{ $laporan->judul }}
                         </div>
@@ -96,9 +102,7 @@
                         </div>
                     </div>
 
-                    {{-- Konten Kanan (Disamakan dengan warga: padding 14px 18px) --}}
                     <div style="padding:14px 18px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; flex-shrink:0; gap:8px;">
-                        {{-- Badge padding disamakan menjadi 3px 10px --}}
                         <span class="{{ $sc['badge'] }}" style="font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
                             <span class="{{ $sc['dot'] }}" style="width:5px; height:5px; border-radius:50%; display:inline-block;"></span>
                             {{ ucfirst($laporan->status) }}
@@ -110,7 +114,6 @@
                             <span style="max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $laporan->user->name }}</span>
                             <span style="color:#D8D4CC;">·</span>
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                            {{-- Font weight dan warna text komentar disamakan --}}
                             <span style="font-weight:600; color:#4A4A42;">{{ $laporan->komentars->count() }}</span>
                         </div>
                     </div>
@@ -158,7 +161,6 @@
                 <div style="display:flex; overflow:hidden; border-bottom:1px solid #F5F2ED; cursor:pointer; transition:background 0.15s;"
                     onclick="window.location='{{ route('laporan.show', $laporan) }}'"
                     onmouseover="this.style.background='#FAFAF8'" onmouseout="this.style.background=''">
-                    <div class="{{ $sc['bar'] }}" style="width:3px; flex-shrink:0;"></div>
                     <div style="flex:1; padding:14px 18px; min-width:0;">
                         <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;">
                             <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#D4621A;">{{ $laporan->kategori }}</span>
