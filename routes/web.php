@@ -6,10 +6,13 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\KomentarController;
 use App\Http\Controllers\NotifikasiController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BerandaController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('beranda');
 });
+
+Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
