@@ -50,6 +50,37 @@
         </div>
     </div>
 
+    {{-- GRAFIK FREKUENSI LAPORAN (Admin Only) --}}
+    @if(auth()->user()->isAdmin())
+    <div style="margin-bottom:32px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18;">
+                Frekuensi Laporan
+            </div>
+            <div id="chartTabs" style="display:flex; gap:4px; background:#F5F4F0; border-radius:8px; padding:3px;">
+                <button onclick="switchChart('bulanan')" data-tab="bulanan"
+                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:#fff; color:#1A1A18; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                    Bulanan
+                </button>
+                <button onclick="switchChart('mingguan')" data-tab="mingguan"
+                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
+                    Mingguan
+                </button>
+                <button onclick="switchChart('harian')" data-tab="harian"
+                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
+                    Harian
+                </button>
+            </div>
+        </div>
+
+        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:24px 20px 16px 20px; position:relative; overflow:hidden;">
+            {{-- Decorative subtle pattern --}}
+            <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle at top right, rgba(212,98,26,0.03) 0%, transparent 70%); pointer-events:none;"></div>
+
+            <canvas id="laporanChart" height="100"></canvas>
+        </div>
+    </div>
+
     {{-- DAFTAR LAPORAN --}}
     <section>
 
@@ -196,3 +227,127 @@
 
 </x-sidebar-layout>
 <script>lucide.createIcons();</script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const chartData = {
+            bulanan:  {!! json_encode($chartBulanan) !!},
+            mingguan: {!! json_encode($chartMingguan) !!},
+            harian:   {!! json_encode($chartHarian) !!}
+        };
+
+        const ctx = document.getElementById('laporanChart').getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.clientHeight || 300);
+        gradient.addColorStop(0, 'rgba(212, 98, 26, 0.15)');
+        gradient.addColorStop(0.6, 'rgba(212, 98, 26, 0.04)');
+        gradient.addColorStop(1, 'rgba(212, 98, 26, 0)');
+
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.bulanan.labels || [],
+                datasets: [{
+                    label: 'Jumlah Laporan',
+                    data: chartData.bulanan.data || [],
+                    borderColor: '#D4621A',
+                    backgroundColor: gradient,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#D4621A',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: '#D4621A',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2.5,
+                    tension: 0.35,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1A1A18',
+                        titleFont: { family: "'DM Sans', sans-serif", size: 12, weight: '600' },
+                        bodyFont: { family: "'DM Sans', sans-serif", size: 13 },
+                        titleColor: '#fff',
+                        bodyColor: '#E8E6E0',
+                        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(items) { return items[0].label; },
+                            label: function(item) { return item.raw + ' laporan'; }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                        },
+                        border: { display: false },
+                        ticks: {
+                            font: { family: "'DM Sans', sans-serif", size: 11 },
+                            color: '#8A8A7A',
+                            maxRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 12,
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(216, 212, 204, 0.5)',
+                            drawTicks: false,
+                        },
+                        border: { display: false, dash: [4, 4] },
+                        ticks: {
+                            font: { family: "'DM Sans', sans-serif", size: 11 },
+                            color: '#8A8A7A',
+                            padding: 8,
+                            stepSize: 1,
+                            callback: function(value) {
+                                return Number.isInteger(value) ? value : '';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 700,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        window.switchChart = function(type) {
+            const d = chartData[type];
+            if (!d) return;
+
+            chart.data.labels = d.labels;
+            chart.data.datasets[0].data = d.data;
+            chart.update('active');
+
+            document.querySelectorAll('#chartTabs button').forEach(btn => {
+                if (btn.dataset.tab === type) {
+                    btn.style.background = '#fff';
+                    btn.style.color = '#1A1A18';
+                    btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#8A8A7A';
+                    btn.style.boxShadow = 'none';
+                }
+            });
+        };
+    })();
+    </script>
+    @endif
