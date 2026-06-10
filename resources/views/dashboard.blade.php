@@ -50,36 +50,72 @@
         </div>
     </div>
 
-    {{-- GRAFIK FREKUENSI LAPORAN (Admin Only) --}}
+{{-- PETA SEBARAN LAPORAN (Admin Only) --}}
     @if(auth()->user()->isAdmin())
     <div style="margin-bottom:32px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-left:4px;">
             <div style="font-family:'DM Serif Display',serif; font-size:18px; color:#1A1A18;">
-                Frekuensi Laporan
+                Peta Sebaran Laporan
             </div>
-            <div id="chartTabs" style="display:flex; gap:4px; background:#F5F4F0; border-radius:8px; padding:3px;">
-                <button onclick="switchChart('bulanan')" data-tab="bulanan"
-                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:#fff; color:#1A1A18; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-                    Bulanan
-                </button>
-                <button onclick="switchChart('mingguan')" data-tab="mingguan"
-                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
-                    Mingguan
-                </button>
-                <button onclick="switchChart('harian')" data-tab="harian"
-                    style="padding:6px 16px; border-radius:6px; border:none; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
-                    Harian
-                </button>
+            <div style="font-size:11px; color:#8A8A7A; display:flex; align-items:center; gap:4px;">
+                <span style="width:6px; height:6px; border-radius:50%; background:#2D7A4F; display:inline-block;"></span>
+                {{ count($mapMarkers) }} titik laporan
             </div>
         </div>
-
-        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:24px 20px 16px 20px; position:relative; overflow:hidden;">
-            {{-- Decorative subtle pattern --}}
-            <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle at top right, rgba(212,98,26,0.03) 0%, transparent 70%); pointer-events:none;"></div>
-
-            <canvas id="laporanChart" height="100"></canvas>
+        <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:20px; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle at top right, rgba(45,122,79,0.04) 0%, transparent 70%); pointer-events:none;"></div>
+            <div id="sebaranMap" style="width:100%; height:300px; border-radius:10px; overflow:hidden; border:1px solid #E8E6E0;"></div>
         </div>
     </div>
+    @endif
+
+    {{-- FREKUENSI LAPORAN & DISTRIBUSI KATEGORI (Admin Only) --}}
+    @if(auth()->user()->isAdmin())
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:32px;">
+
+        {{-- Frekuensi Laporan --}}
+        <div style="display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-left:4px;">
+                <div style="font-family:'DM Serif Display',serif; font-size:16px; color:#1A1A18;">
+                    Frekuensi Laporan
+                </div>
+                <div id="chartTabs" style="display:flex; gap:4px; background:#F5F4F0; border-radius:8px; padding:3px;">
+                    <button onclick="switchChart('bulanan')" data-tab="bulanan"
+                        style="padding:5px 13px; border-radius:6px; border:none; font-size:11px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:#fff; color:#1A1A18; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                        Bulanan
+                    </button>
+                    <button onclick="switchChart('mingguan')" data-tab="mingguan"
+                        style="padding:5px 13px; border-radius:6px; border:none; font-size:11px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
+                        Mingguan
+                    </button>
+                    <button onclick="switchChart('harian')" data-tab="harian"
+                        style="padding:5px 13px; border-radius:6px; border:none; font-size:11px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:#8A8A7A;">
+                        Harian
+                    </button>
+                </div>
+            </div>
+            <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:20px 20px 14px 20px; position:relative; overflow:hidden; flex:1;">
+                <div style="position:absolute; top:0; right:0; width:180px; height:180px; background:radial-gradient(circle at top right, rgba(212,98,26,0.03) 0%, transparent 70%); pointer-events:none;"></div>
+                <canvas id="laporanChart" height="120"></canvas>
+            </div>
+        </div>
+
+        {{-- Distribusi Kategori --}}
+        <div style="display:flex; flex-direction:column;">
+            <div style="font-family:'DM Serif Display',serif; font-size:16px; color:#1A1A18; margin-bottom:10px; padding-left:4px;">
+                Distribusi Kategori
+            </div>
+            <div style="background:#fff; border-radius:12px; border:1.5px solid #D8D4CC; padding:18px 16px; position:relative; overflow:hidden; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+                <div style="position:absolute; top:0; left:0; width:120px; height:120px; background:radial-gradient(circle at top left, rgba(42,91,168,0.04) 0%, transparent 70%); pointer-events:none;"></div>
+                <div style="width:110px; height:110px; flex-shrink:0;">
+                    <canvas id="kategoriChart"></canvas>
+                </div>
+                <div id="kategoriLegend" style="width:100%; display:flex; flex-direction:column; gap:7px;"></div>
+            </div>
+        </div>
+
+    </div>
+    @endif
 
     {{-- DAFTAR LAPORAN --}}
     <section>
@@ -350,4 +386,168 @@
         };
     })();
     </script>
-    @endif
+
+    {{-- Leaflet CSS & JS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    {{-- Distribusi Kategori Doughnut Chart --}}
+    <script>
+    (function() {
+        const kategoriRaw = {!! json_encode($chartKategori) !!};
+        if (!kategoriRaw || !kategoriRaw.labels || kategoriRaw.labels.length === 0) return;
+
+        const kategoriColors = {
+            'Infrastruktur & Jalan': '#D4621A',
+            'Sampah & Kebersihan':   '#2A5BA8',
+            'Air & Drainase':        '#2D7A4F',
+            'Fasilitas Umum':        '#C9A227',
+            'Lainnya':               '#8A8A7A',
+        };
+        const fallbackColors = ['#6B5B95', '#D65076', '#45B8AC', '#EFC050', '#5B5EA6'];
+
+        const colors = kategoriRaw.labels.map((label, i) =>
+            kategoriColors[label] || fallbackColors[i % fallbackColors.length]
+        );
+
+        const totalLaporan = kategoriRaw.data.reduce((a, b) => a + b, 0);
+
+        const ctxK = document.getElementById('kategoriChart').getContext('2d');
+        new Chart(ctxK, {
+            type: 'doughnut',
+            data: {
+                labels: kategoriRaw.labels,
+                datasets: [{
+                    data: kategoriRaw.data,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 3,
+                    hoverBorderColor: '#fff',
+                    hoverBorderWidth: 3,
+                    hoverOffset: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '62%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1A1A18',
+                        titleFont: { family: "'DM Sans', sans-serif", size: 12, weight: '600' },
+                        bodyFont: { family: "'DM Sans', sans-serif", size: 13 },
+                        titleColor: '#fff',
+                        bodyColor: '#E8E6E0',
+                        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                        cornerRadius: 8,
+                        displayColors: true,
+                        boxWidth: 10,
+                        boxHeight: 10,
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(ctx) {
+                                const pct = totalLaporan > 0 ? Math.round((ctx.raw / totalLaporan) * 100) : 0;
+                                return ` ${ctx.raw} laporan (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 800,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // Custom legend
+        const legendEl = document.getElementById('kategoriLegend');
+        kategoriRaw.labels.forEach((label, i) => {
+            const pct = totalLaporan > 0 ? Math.round((kategoriRaw.data[i] / totalLaporan) * 100) : 0;
+            const item = document.createElement('div');
+            item.style.cssText = 'display:flex; align-items:center; gap:10px;';
+            item.innerHTML = `
+                <span style="width:10px; height:10px; border-radius:3px; background:${colors[i]}; flex-shrink:0;"></span>
+                <span style="flex:1; font-size:12px; color:#4A4A42; font-family:'DM Sans',sans-serif;">${label}</span>
+                <span style="font-size:13px; font-weight:600; color:#1A1A18; font-family:'DM Sans',sans-serif;">${kategoriRaw.data[i]}</span>
+                <span style="font-size:11px; color:#8A8A7A; min-width:32px; text-align:right;">${pct}%</span>
+            `;
+            legendEl.appendChild(item);
+        });
+    })();
+    </script>
+
+    {{-- Peta Sebaran Laporan --}}
+    <script>
+    (function() {
+        const markers = {!! json_encode($mapMarkers) !!};
+        const mapEl = document.getElementById('sebaranMap');
+        if (!mapEl) return;
+
+        const map = L.map('sebaranMap', {
+            scrollWheelZoom: false,
+            zoomControl: true,
+        }).setView([-7.25, 112.75], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 18,
+        }).addTo(map);
+
+        const kategoriColors = {
+            'Infrastruktur & Jalan': '#D4621A',
+            'Sampah & Kebersihan':   '#2A5BA8',
+            'Air & Drainase':        '#2D7A4F',
+            'Fasilitas Umum':        '#C9A227',
+            'Lainnya':               '#8A8A7A',
+        };
+        const statusLabels = {
+            'pending': '⏳ Pending',
+            'diproses': '🔄 Diproses',
+            'selesai': '✅ Selesai',
+        };
+
+        if (markers.length > 0) {
+            const bounds = [];
+            markers.forEach(m => {
+                const color = kategoriColors[m.kategori] || '#8A8A7A';
+                const circle = L.circleMarker([m.lat, m.lng], {
+                    radius: 7,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.85,
+                }).addTo(map);
+
+                circle.bindPopup(`
+                    <div style="font-family:'DM Sans',sans-serif; min-width:180px;">
+                        <div style="font-weight:700; font-size:13px; color:#1A1A18; margin-bottom:4px;">${m.judul}</div>
+                        <div style="font-size:11px; color:#D4621A; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">${m.kategori}</div>
+                        <div style="font-size:11px; color:#8A8A7A; margin-bottom:2px;">📍 ${m.lokasi}</div>
+                        <div style="font-size:11px; color:#4A4A42;">${statusLabels[m.status] || m.status}</div>
+                    </div>
+                `, { maxWidth: 250, className: 'custom-popup' });
+
+                bounds.push([m.lat, m.lng]);
+            });
+            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+        }
+
+        // Fix Leaflet rendering in hidden/resized containers
+        setTimeout(() => map.invalidateSize(), 300);
+    })();
+    </script>
+
+    <style>
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            border: 1px solid #E8E6E0;
+        }
+        .custom-popup .leaflet-popup-tip {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
+

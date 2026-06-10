@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Laporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
@@ -16,7 +17,7 @@ class DashboardController extends Controller
         $pending  = Laporan::where('status', 'pending')->count();
         $diproses = Laporan::where('status', 'diproses')->count();
         $selesai  = Laporan::where('status', 'selesai')->count();
-        $terbaru  = Laporan::with('user')->latest()->take(5)->get();
+        $terbaru  = Laporan::with('user')->latest()->take(4)->get();
 
         // Statistik Personal (Warga)
         $myTotal    = Laporan::where('user_id', auth()->id())->count();
@@ -33,6 +34,8 @@ class DashboardController extends Controller
         $chartBulanan = [];
         $chartMingguan = [];
         $chartHarian = [];
+        $chartKategori = [];
+        $mapMarkers = [];
 
         if (auth()->user()->isAdmin()) {
             // Bulanan: 12 bulan terakhir
@@ -52,18 +55,45 @@ class DashboardController extends Controller
                 $chartMingguan['data'][] = Laporan::whereBetween('created_at', [$weekStart, $weekEnd])->count();
             }
 
-            // Harian: 30 hari terakhir
+            // Harian: 7 hari terakhir
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::now()->subDays($i);
                 $chartHarian['labels'][] = $date->format('d M');
                 $chartHarian['data'][] = Laporan::whereDate('created_at', $date->toDateString())->count();
             }
+
+            // Distribusi per kategori
+            $kategoriData = Laporan::select('kategori', DB::raw('count(*) as total'))
+                ->groupBy('kategori')
+                ->orderByDesc('total')
+                ->get();
+            $chartKategori = [
+                'labels' => $kategoriData->pluck('kategori')->toArray(),
+                'data'   => $kategoriData->pluck('total')->toArray(),
+            ];
+
+            // Peta sebaran laporan — hanya yang punya koordinat
+            $mapMarkers = Laporan::whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->select('id', 'judul', 'kategori', 'status', 'lokasi', 'latitude', 'longitude')
+                ->get()
+                ->map(fn ($l) => [
+                    'id'       => $l->id,
+                    'judul'    => $l->judul,
+                    'kategori' => $l->kategori,
+                    'status'   => $l->status,
+                    'lokasi'   => $l->lokasi,
+                    'lat'      => (float) $l->latitude,
+                    'lng'      => (float) $l->longitude,
+                ])
+                ->toArray();
         }
 
         return view('dashboard', compact(
             'total', 'pending', 'diproses', 'selesai', 'terbaru',
             'myTotal', 'myPending', 'myDiproses', 'mySelesai', 'myLaporan',
-            'chartBulanan', 'chartMingguan', 'chartHarian'
+            'chartBulanan', 'chartMingguan', 'chartHarian',
+            'chartKategori', 'mapMarkers'
         ));
     }
 }
