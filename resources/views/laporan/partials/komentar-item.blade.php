@@ -92,7 +92,7 @@
                 Balas
             </button>
 
-            {{-- Tombol edit & hapus (hanya untuk pemilik komentar) --}}
+            {{-- Tombol edit (hanya untuk pemilik komentar) --}}
             @if(auth()->id() === $komentar->user_id)
                 <button onclick="window.toggleEdit({{ $komentar->id }})"
                     class="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-blue-600 bg-transparent border-none cursor-pointer font-medium transition-colors px-0 py-0">
@@ -102,9 +102,12 @@
                     </svg>
                     Edit
                 </button>
+            @endif
 
+            {{-- Tombol hapus (untuk pemilik komentar ATAU admin) --}}
+            @if(auth()->id() === $komentar->user_id || auth()->user()->isAdmin())
                 <form action="{{ route('komentar.destroy', $komentar->id) }}" method="POST" class="inline"
-                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus komentar ini?')">
+                    onsubmit="return confirm('{{ auth()->id() !== $komentar->user_id ? 'Anda akan menghapus komentar milik ' . $komentar->user->name . '. ' : '' }}Apakah Anda yakin ingin menghapus komentar ini?')">
                     @csrf
                     @method('DELETE')
                     <button type="submit"

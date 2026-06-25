@@ -68,8 +68,8 @@ class KomentarController extends Controller
 
     public function destroy(Komentar $komentar)
     {
-        // Pastikan hanya pemilik komentar yang bisa menghapus
-        if ($komentar->user_id !== Auth::id()) {
+        // Admin bisa menghapus semua komentar, user biasa hanya bisa menghapus miliknya
+        if (!Auth::user()->isAdmin() && $komentar->user_id !== Auth::id()) {
             abort(403, 'Anda tidak memiliki izin untuk menghapus komentar ini.');
         }
 
